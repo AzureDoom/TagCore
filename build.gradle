@@ -12,6 +12,7 @@ javadoc {
 
 configurations {
     testCompileOnly.extendsFrom compileOnly
+    shade
 }
 
 group = project.group
@@ -46,10 +47,22 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly "com.hypixel.hytale:Server:${hytale_version}"
+    testRuntimeOnly 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
+    implementation 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
+    shade 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
 
     implementation 'com.google.code.gson:gson:2.10.1'
 }
 
+tasks.jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+}
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()

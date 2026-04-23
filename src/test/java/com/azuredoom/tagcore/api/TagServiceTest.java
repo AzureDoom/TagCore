@@ -1,5 +1,7 @@
 package com.azuredoom.tagcore.api;
 
+import com.azuredoom.hytalecustomassetloader.model.AssetSource;
+import com.azuredoom.hytalecustomassetloader.model.AssetSourceKind;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -10,8 +12,6 @@ import com.azuredoom.tagcore.data.TagId;
 import com.azuredoom.tagcore.data.TagQueryResult;
 import com.azuredoom.tagcore.data.TagQueryStatus;
 import com.azuredoom.tagcore.data.TagRegistry;
-import com.azuredoom.tagcore.data.TagSource;
-import com.azuredoom.tagcore.data.TagSourceKind;
 import com.azuredoom.tagcore.data.TagType;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,7 +84,7 @@ class TagServiceTest {
             TagId.parse(id),
             type,
             values,
-            new TagSource(TagSourceKind.CLASSPATH_DIRECTORY, "tests/" + id + ".json")
+            new AssetSource(AssetSourceKind.CLASSPATH_DIRECTORY, "tests/" + id + ".json")
         );
     }
 }

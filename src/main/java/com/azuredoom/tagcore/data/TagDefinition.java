@@ -1,5 +1,7 @@
 package com.azuredoom.tagcore.data;
 
+import com.azuredoom.hytalecustomassetloader.model.AssetSource;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -7,7 +9,7 @@ import java.util.Objects;
  * Immutable data record representing a single tag definition as loaded from a JSON source.
  * <p>
  * A tag definition preserves both the original raw ID string read from disk and its parsed canonical {@link TagId}. It
- * also stores the declared {@link TagType}, the raw ordered list of values, and the {@link TagSource} the definition
+ * also stores the declared {@link TagType}, the raw ordered list of values, and the {@link AssetSource} the definition
  * was loaded from.
  * <p>
  * Values are either plain concrete identifiers (for example, {@code "Fish_Eel_Moray_Item"}) or tag references prefixed
@@ -24,7 +26,7 @@ public record TagDefinition(
     TagId id,
     TagType type,
     List<String> values,
-    TagSource source
+    AssetSource source
 ) {
 
     /**

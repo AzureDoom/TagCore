@@ -1,5 +1,9 @@
 package com.azuredoom.tagcore;
 
+import com.azuredoom.hytalecustomassetloader.*;
+import com.azuredoom.hytalecustomassetloader.model.AssetSource;
+import com.azuredoom.hytalecustomassetloader.model.AssetSourceKind;
+import com.azuredoom.hytalecustomassetloader.spi.AssetLogger;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.hypixel.hytale.builtin.hytalegenerator.assets.biomes.BiomeAsset;
@@ -13,15 +17,9 @@ import com.hypixel.hytale.server.npc.NPCPlugin;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.JarURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import com.azuredoom.tagcore.data.*;
 
@@ -271,243 +269,62 @@ public final class TagBootstrap {
      */
     private void loadAllTags(TagRegistry registry) {
         try {
-            Map<String, TagDefinition> mergedDefinitions = new LinkedHashMap<>();
+            var loader = new AssetLoader<>(
+                plugin.getClass().getClassLoader(),
+                new AssetDiscoveryOptions(
+                    "tags",
+                    ".json",
+                    Paths.get("mods").toAbsolutePath().normalize(),
+                    true,
+                    false
+                ),
+                this::loadTag,
+                TagDefinition::canonicalId,
+                new AssetLogger() {
 
-            loadAllClasspathTags(mergedDefinitions);
-            loadExternalZipAssetPacks(mergedDefinitions);
+                    @Override
+                    public void info(String message) {
+                        TagCoreMod.infoLog(message);
+                    }
 
-            for (var definition : mergedDefinitions.values()) {
+                    @Override
+                    public void warn(String message) {
+                        TagCoreMod.warnLog(message);
+                    }
+                }
+            );
+
+            var result = loader.loadAll();
+
+            for (var definition : result.mergedAssets().values()) {
                 registry.register(definition);
             }
 
             for (var definition : registry.all()) {
-                var result = registry.resolve(definition.canonicalId());
+                var resultResolve = registry.resolve(definition.canonicalId());
 
-                for (var issue : result.issues()) {
+                for (var issue : resultResolve.issues()) {
                     TagCoreMod.warnLog(
                         "While resolving tag '" + definition.canonicalId() + "': " + issue.detail()
                     );
                 }
 
                 if (
-                    result.status() == TagQueryStatus.CIRCULAR_REFERENCE
-                        || result.status() == TagQueryStatus.INVALID_CONTENT
-                        || result.status() == TagQueryStatus.NOT_FOUND
-                        || result.status() == TagQueryStatus.INVALID_TAG_ID
+                    resultResolve.status() == TagQueryStatus.CIRCULAR_REFERENCE
+                        || resultResolve.status() == TagQueryStatus.INVALID_CONTENT
+                        || resultResolve.status() == TagQueryStatus.NOT_FOUND
+                        || resultResolve.status() == TagQueryStatus.INVALID_TAG_ID
                 ) {
                     throw new IllegalStateException(
-                        "Failed to fully resolve tag '" + definition.canonicalId() + "' with status " + result.status()
+                        "Failed to fully resolve tag '" + definition.canonicalId() + "' with status " + resultResolve
+                            .status()
                     );
                 }
             }
 
-            TagCoreMod.infoLog("Loaded " + mergedDefinitions.size() + " tags.");
+            TagCoreMod.infoLog("Loaded " + result.mergedAssets().size() + " tags.");
         } catch (Exception e) {
             throw new RuntimeException("Failed to load tag definitions", e);
-        }
-    }
-
-    /**
-     * Scans all {@code tags/} resources on the plugin classloader and loads their JSON tag definitions into
-     * {@code sink}.
-     * <p>
-     * Supports both {@code file://} (exploded directory) and {@code jar://} (packaged JAR) URL protocols. Any other
-     * protocol is skipped with a warning.
-     *
-     * @param sink the map to accumulate loaded definitions into
-     * @throws Exception if resource enumeration or any individual file load fails
-     */
-    private void loadAllClasspathTags(Map<String, TagDefinition> sink) throws Exception {
-        var classLoader = plugin.getClass().getClassLoader();
-        Enumeration<URL> resources = classLoader.getResources("tags");
-
-        if (!resources.hasMoreElements()) {
-            TagCoreMod.warnLog("No tags resource folder found on classpath.");
-            return;
-        }
-
-        while (resources.hasMoreElements()) {
-            var resourceUrl = resources.nextElement();
-            var protocol = resourceUrl.getProtocol();
-
-            if ("file".equals(protocol)) {
-                loadTagsFromDirectory(sink, resourceUrl);
-            } else if ("jar".equals(protocol)) {
-                loadTagsFromJar(sink, resourceUrl);
-            } else {
-                TagCoreMod.warnLog(
-                    "Skipping unsupported tags resource protocol: " + protocol + " (" + resourceUrl + ")"
-                );
-            }
-        }
-    }
-
-    /**
-     * Recursively walks a file-system {@code tags/} directory and loads every {@code .json} file found as a
-     * {@link TagDefinition}.
-     *
-     * @param sink        the map to accumulate loaded definitions into
-     * @param resourceUrl a {@code file://} URL pointing to the {@code tags/} directory
-     * @throws Exception if directory traversal or any file read fails
-     */
-    private void loadTagsFromDirectory(Map<String, TagDefinition> sink, URL resourceUrl) throws Exception {
-        var tagsPath = Paths.get(resourceUrl.toURI());
-
-        try (var stream = Files.walk(tagsPath)) {
-            stream.filter(Files::isRegularFile)
-                .filter(path -> path.toString().endsWith(".json"))
-                .forEach(path -> {
-                    var relative = tagsPath.relativize(path).toString().replace('\\', '/');
-                    var sourceName = "tags/" + relative;
-
-                    try (var input = Files.newInputStream(path)) {
-                        var definition = loadTag(input, sourceName, TagSourceKind.CLASSPATH_DIRECTORY);
-                        putDefinition(sink, definition, false, sourceName);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to load tag resource " + sourceName, e);
-                    }
-                });
-        }
-    }
-
-    /**
-     * Iterates over a JAR file's entries and loads any {@code .json} files found under the {@code tags/} prefix as
-     * {@link TagDefinition} instances.
-     *
-     * @param sink        the map to accumulate loaded definitions into
-     * @param resourceUrl a {@code jar://} URL pointing to the {@code tags/} entry inside a JAR
-     * @throws Exception if the JAR cannot be opened or any entry read fails
-     */
-    private void loadTagsFromJar(Map<String, TagDefinition> sink, URL resourceUrl) throws Exception {
-        var connection = (JarURLConnection) resourceUrl.openConnection();
-
-        try (var jarFile = connection.getJarFile()) {
-            var entries = jarFile.entries();
-
-            while (entries.hasMoreElements()) {
-                var entry = entries.nextElement();
-                var name = entry.getName();
-
-                if (!entry.isDirectory() && name.startsWith("tags/") && name.endsWith(".json")) {
-                    try (var input = jarFile.getInputStream(entry)) {
-                        var definition = loadTag(input, name, TagSourceKind.EXTERNAL_JAR);
-                        putDefinition(sink, definition, false, name);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Scans the external asset pack directory ({@code mods/}) for {@code .zip} and {@code .jar} files and loads tag
-     * definitions from each, in alphabetical filename order.
-     * <p>
-     * Asset pack tags may override classpath-defined tags with the same ID, allowing server administrators or content
-     * creators to replace built-in tag data without modifying the plugin JAR.
-     *
-     * @param sink the map to accumulate loaded definitions into
-     * @throws Exception if directory listing or any pack load fails
-     */
-    private void loadExternalZipAssetPacks(Map<String, TagDefinition> sink) throws Exception {
-        var assetPackDir = resolveAssetPackDirectory();
-
-        if (!Files.exists(assetPackDir) || !Files.isDirectory(assetPackDir)) {
-            return;
-        }
-
-        try (var stream = Files.list(assetPackDir)) {
-            stream.filter(Files::isRegularFile)
-                .filter(path -> {
-                    var name = path.getFileName().toString().toLowerCase();
-                    return name.endsWith(".zip") || name.endsWith(".jar");
-                })
-                .sorted()
-                .forEach(path -> {
-                    try {
-                        loadTagsFromZip(sink, path);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to load asset pack " + path, e);
-                    }
-                });
-        }
-    }
-
-    /**
-     * Opens a ZIP or JAR asset pack at the given path and loads any {@code tags/*.json} entries it contains as
-     * {@link TagDefinition} instances.
-     * <p>
-     * Definitions loaded from asset packs are treated as overrides; if a tag with the same ID already exists in
-     * {@code sink} it will be replaced.
-     *
-     * @param sink    the map to accumulate loaded definitions into
-     * @param zipPath the path to the {@code .zip} or {@code .jar} asset pack
-     * @throws Exception if the archive cannot be opened or any entry fails to parse
-     */
-    private void loadTagsFromZip(Map<String, TagDefinition> sink, Path zipPath) throws Exception {
-        try (var zipFile = new ZipFile(zipPath.toFile())) {
-            var entries = zipFile.entries();
-
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                var name = entry.getName();
-
-                if (!entry.isDirectory() && name.startsWith("tags/") && name.endsWith(".json")) {
-                    try (var input = zipFile.getInputStream(entry)) {
-                        var definition = loadTag(
-                            input,
-                            zipPath.getFileName() + "!/" + name,
-                            TagSourceKind.EXTERNAL_ZIP
-                        );
-                        putDefinition(sink, definition, true, zipPath + "!/" + name);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Inserts a {@link TagDefinition} into {@code sink}, applying override rules.
-     * <p>
-     * If {@code overrideExisting} is {@code true} and a definition with the same ID already exists, it will be replaced
-     * and a log message emitted. If {@code overrideExisting} is {@code false} and a duplicate is encountered, the
-     * incoming definition is discarded with a warning.
-     *
-     * @param sink             the map to insert or update the definition in
-     * @param definition       the definition to insert; must not be {@code null}
-     * @param overrideExisting {@code true} if this source is allowed to replace previously loaded definitions with the
-     *                         same ID
-     * @param sourceName       human-readable source path used in log and error messages
-     * @throws NullPointerException  if {@code definition} is {@code null}
-     * @throws IllegalStateException if the definition's {@code id} is null or blank
-     */
-    private void putDefinition(
-        Map<String, TagDefinition> sink,
-        TagDefinition definition,
-        boolean overrideExisting,
-        String sourceName
-    ) {
-        Objects.requireNonNull(definition, "definition");
-
-        var canonicalId = definition.canonicalId();
-        if (canonicalId.isBlank()) {
-            throw new IllegalStateException("Tag definition from " + sourceName + " has null or blank id");
-        }
-
-        var existing = sink.get(canonicalId);
-        if (existing == null) {
-            sink.put(canonicalId, definition);
-            TagCoreMod.infoLog("Loaded tag '" + canonicalId + "' from " + sourceName);
-            return;
-        }
-
-        if (overrideExisting) {
-            sink.put(canonicalId, definition);
-            TagCoreMod.infoLog("Overrode tag '" + canonicalId + "' from " + sourceName);
-        } else {
-            TagCoreMod.warnLog(
-                "Skipping duplicate built-in/classpath tag '" + canonicalId + "' from " + sourceName +
-                    "' because one was already loaded"
-            );
         }
     }
 
@@ -523,7 +340,7 @@ public final class TagBootstrap {
      * @throws RuntimeException if the stream cannot be read, JSON is malformed, or required fields ({@code id},
      *                          {@code type}) are missing
      */
-    private TagDefinition loadTag(InputStream stream, String sourceName, TagSourceKind sourceKind) {
+    private TagDefinition loadTag(InputStream stream, String sourceName, AssetSourceKind sourceKind) {
         try (var reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
             var root = GSON.fromJson(reader, JsonObject.class);
 
@@ -556,21 +373,10 @@ public final class TagBootstrap {
                 tagId,
                 type,
                 values,
-                new TagSource(sourceKind, sourceName)
+                new AssetSource(sourceKind, sourceName)
             );
         } catch (Exception e) {
             throw new RuntimeException("Failed to load tag resource " + sourceName, e);
         }
-    }
-
-    /**
-     * Resolves the absolute path of the external asset pack directory.
-     * <p>
-     * Currently returns the {@code mods/} directory relative to the current working directory (i.e., the server root).
-     *
-     * @return the absolute, normalized path to the asset pack directory
-     */
-    private Path resolveAssetPackDirectory() {
-        return Paths.get("mods").toAbsolutePath().normalize();
     }
 }

@@ -1,5 +1,7 @@
 package com.azuredoom.tagcore.data;
 
+import com.azuredoom.hytalecustomassetloader.model.AssetSource;
+import com.azuredoom.hytalecustomassetloader.model.AssetSourceKind;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -102,7 +104,7 @@ class TagRegistryTest {
             TagId.parse(id),
             type,
             values,
-            new TagSource(TagSourceKind.CLASSPATH_DIRECTORY, "tests/" + id + ".json")
+            new AssetSource(AssetSourceKind.CLASSPATH_DIRECTORY, "tests/" + id + ".json")
         );
     }
 }

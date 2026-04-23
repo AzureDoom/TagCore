@@ -1,5 +1,7 @@
 package com.azuredoom.tagcore;
 
+import com.azuredoom.hytalecustomassetloader.model.AssetSource;
+import com.azuredoom.hytalecustomassetloader.model.AssetSourceKind;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
@@ -13,7 +15,6 @@ import java.util.zip.ZipOutputStream;
 
 import com.azuredoom.tagcore.data.TagDefinition;
 import com.azuredoom.tagcore.data.TagId;
-import com.azuredoom.tagcore.data.TagSourceKind;
 import com.azuredoom.tagcore.data.TagType;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,17 +31,17 @@ class TagBootstrapTest {
             TagDefinition definition = (TagDefinition) invoke(
                 bootstrap,
                 "loadTag",
-                new Class<?>[] { InputStream.class, String.class, TagSourceKind.class },
+                new Class<?>[] { InputStream.class, String.class, AssetSourceKind.class },
                 in,
                 "tags/item-tools.json",
-                TagSourceKind.CLASSPATH_DIRECTORY
+                AssetSourceKind.CLASSPATH_DIRECTORY
             );
 
             assertEquals("tagcore:test_tools", definition.canonicalId());
             assertEquals(TagType.ITEM, definition.type());
             assertEquals(List.of("iron_pickaxe", "diamond_pickaxe"), definition.values());
-            assertEquals(TagSourceKind.CLASSPATH_DIRECTORY, definition.source().kind());
-            assertEquals("tags/item-tools.json", definition.source().location());
+            assertEquals(AssetSourceKind.CLASSPATH_DIRECTORY, definition.source().kind());
+            assertEquals("tags/item-tools.json", definition.source().name());
         }
     }
 
@@ -56,10 +57,10 @@ class TagBootstrapTest {
                 () -> invoke(
                     bootstrap,
                     "loadTag",
-                    new Class<?>[] { InputStream.class, String.class, TagSourceKind.class },
+                    new Class<?>[] { InputStream.class, String.class, AssetSourceKind.class },
                     in,
                     "tags/malformed-json.json",
-                    TagSourceKind.CLASSPATH_DIRECTORY
+                    AssetSourceKind.CLASSPATH_DIRECTORY
                 )
             );
 
@@ -79,10 +80,10 @@ class TagBootstrapTest {
                 () -> invoke(
                     bootstrap,
                     "loadTag",
-                    new Class<?>[] { InputStream.class, String.class, TagSourceKind.class },
+                    new Class<?>[] { InputStream.class, String.class, AssetSourceKind.class },
                     in,
                     "tags/missing-type.json",
-                    TagSourceKind.CLASSPATH_DIRECTORY
+                    AssetSourceKind.CLASSPATH_DIRECTORY
                 )
             );
 
@@ -108,14 +109,14 @@ class TagBootstrapTest {
         }
     }
 
-    private static TagDefinition tag(String id, List<String> values, TagSourceKind kind, String location) {
+    private static TagDefinition tag(String id, List<String> values, AssetSourceKind kind, String location) {
         String namespaced = id.contains(":") ? id : "tagcore:" + id;
         return new TagDefinition(
             id,
             TagId.parse(namespaced),
             TagType.ITEM,
             values,
-            new com.azuredoom.tagcore.data.TagSource(kind, location)
+            new AssetSource(kind, location)
         );
     }
 
