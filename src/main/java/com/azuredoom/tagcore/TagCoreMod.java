@@ -1,11 +1,14 @@
 package com.azuredoom.tagcore;
 
+import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.hypixel.hytale.server.core.plugin.PluginManager;
 
 import com.azuredoom.tagcore.api.TagService;
 import com.azuredoom.tagcore.command.ReloadTagsCommand;
+import com.azuredoom.tagcore.compat.DynamicTooltipsLibCompat;
 import com.azuredoom.tagcore.data.TagRegistry;
 
 public class TagCoreMod extends JavaPlugin {
@@ -30,6 +33,10 @@ public class TagCoreMod extends JavaPlugin {
             TagCoreMod.tagService.swapRegistry(this.tagRegistry);
         }
         infoLog("TagCore loaded " + tagRegistry.all().size() + " tags.");
+        if (PluginManager.get().getPlugin(new PluginIdentifier("org.herolias", "DynamicTooltipsLib")) != null) {
+            DynamicTooltipsLibCompat.register();
+            infoLog("DynamicTooltipsLib Compat registered");
+        }
         infoLog("TagCore initialized!");
     }
 

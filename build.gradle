@@ -50,6 +50,7 @@ dependencies {
     testRuntimeOnly 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
     implementation 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
     shade 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
+    compileOnly 'curse.maven:dynamictooltipslib-1459711:7817318'
 }
 
 tasks.jar {
