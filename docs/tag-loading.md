@@ -14,21 +14,6 @@ This page explains how TagCore discovers, registers, resolves, and overrides tag
 Tag loading follows a predictable pipeline:
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "primaryColor": "#4F46E5",
-    "primaryTextColor": "#FFFFFF",
-    "primaryBorderColor": "#3730A3",
-    "lineColor": "#475569",
-    "secondaryColor": "#0EA5E9",
-    "tertiaryColor": "#F8FAFC",
-    "background": "#FFFFFF",
-    "mainBkg": "#EEF2FF",
-    "secondBkg": "#E0F2FE",
-    "tertiaryBkg": "#F8FAFC"
-  }
-}}%%
 flowchart LR
     A[Discover built-in and classpath tags] --> B[Load external zip and jar packs]
     B --> C[Register or override tag definitions]
@@ -36,12 +21,14 @@ flowchart LR
     D --> E[Flatten to concrete values]
     E --> F[Cache resolved values for runtime access]
 
-    classDef discovery fill:#DBEAFE,stroke:#2563EB,color:#111827,stroke-width:2px;
-    classDef external fill:#E0F2FE,stroke:#0284C7,color:#111827,stroke-width:2px;
-    classDef registry fill:#EDE9FE,stroke:#7C3AED,color:#111827,stroke-width:2px;
-    classDef resolve fill:#FEF3C7,stroke:#D97706,color:#111827,stroke-width:2px;
-    classDef cache fill:#DCFCE7,stroke:#16A34A,color:#111827,stroke-width:2px;
+%% Classes
+    classDef discovery fill:#4A90E2,color:#fff,stroke:#2C5FA3,stroke-width:2px;
+    classDef external fill:#50B4E6,color:#fff,stroke:#2A7FA8,stroke-width:2px;
+    classDef registry fill:#9013FE,color:#fff,stroke:#5E0CB2,stroke-width:2px;
+    classDef resolve fill:#F5A623,color:#000,stroke:#C97A00,stroke-width:2px;
+    classDef cache fill:#27AE60,color:#fff,stroke:#1E8449,stroke-width:2px;
 
+%% Apply classes
     class A discovery;
     class B external;
     class C registry;
@@ -59,25 +46,18 @@ TagCore loads tags in this order:
 External packs are processed in **alphabetical filename order**.
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "primaryColor": "#4F46E5",
-    "primaryTextColor": "#FFFFFF",
-    "primaryBorderColor": "#3730A3",
-    "lineColor": "#475569",
-    "background": "#FFFFFF"
-  }
-}}%%
 flowchart TD
     A[Classpath tags under tags/] --> B[mods/A-pack.zip]
-    B --> C[mods/MidPack.jar]
-    C --> D[mods/ZOverride.zip]
+B --> C[mods/MidPack.jar]
+C --> D[mods/ZOverride.zip]
 
-    classDef builtIn fill:#EDE9FE,stroke:#7C3AED,color:#111827,stroke-width:2px;
-    classDef external fill:#DBEAFE,stroke:#2563EB,color:#111827,stroke-width:2px;
-    class A builtIn;
-    class B,C,D external;
+%% Classes
+classDef builtIn fill:#9013FE,color:#fff,stroke:#5E0CB2,stroke-width:2px;
+classDef external fill:#4A90E2,color:#fff,stroke:#2C5FA3,stroke-width:2px;
+
+%% Apply classes
+class A builtIn;
+class B,C,D external;
 ```
 
 ## Override Rules
@@ -99,29 +79,26 @@ Because external packs are processed in ascending filename order, later-sorting 
 3. Among external packs, the last pack in ascending filename order wins.
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "lineColor": "#475569",
-    "background": "#FFFFFF"
-  }
-}}%%
 flowchart TD
     A[Built-in definition] --> B{Same tag ID exists later?}
-    B -->|No| C[Keep built-in]
-    B -->|Yes, in built-ins only| D[Keep first built-in and warn]
-    B -->|Yes, in external pack| E[External pack replaces prior definition]
+    B -- No --> C[Keep built-in]
+    B -- Yes, in built-ins only --> D[Keep first built-in and warn]
+    B -- Yes, in external pack --> E[External pack replaces prior definition]
     E --> F{Another later external pack?}
-    F -->|No| G[Final effective definition]
-    F -->|Yes| H[Later alphabetical pack wins]
+    F -- No --> G[Final effective definition]
+    F -- Yes --> H[Later alphabetical pack wins]
     H --> G
 
-    classDef question fill:#F3F4F6,stroke:#6B7280,color:#111827,stroke-width:2px;
-    classDef keep fill:#DCFCE7,stroke:#16A34A,color:#111827,stroke-width:2px;
-    classDef warn fill:#FEF3C7,stroke:#D97706,color:#111827,stroke-width:2px;
-    classDef override fill:#FEE2E2,stroke:#DC2626,color:#111827,stroke-width:2px;
+%% Classes
+    classDef builtIn fill:#9013FE,color:#fff,stroke:#5E0CB2,stroke-width:2px;
+    classDef decision fill:#F5A623,color:#000,stroke:#C97A00,stroke-width:2px;
+    classDef keep fill:#27AE60,color:#fff,stroke:#1E8449,stroke-width:2px;
+    classDef warn fill:#FFD166,color:#000,stroke:#C97A00,stroke-width:2px;
+    classDef override fill:#E74C3C,color:#fff,stroke:#A93226,stroke-width:2px;
 
-    class B,F question;
+%% Apply classes
+    class A builtIn;
+    class B,F decision;
     class C,G keep;
     class D warn;
     class E,H override;
@@ -134,29 +111,24 @@ After tags are collected, TagCore resolves `#references` recursively and flatten
 This happens eagerly so that configuration problems appear during startup instead of later during gameplay.
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "lineColor": "#475569",
-    "background": "#FFFFFF"
-  }
-}}%%
 flowchart TD
     A[Read tag values] --> B{Literal value or #reference?}
-    B -->|Literal value| C[Add value to resolved set]
-    B -->|#reference| D[Load referenced tag]
+    B -- Literal value --> C[Add value to resolved set]
+    B -- #reference --> D[Load referenced tag]
     D --> E{Same tag type?}
-    E -->|Yes| F[Resolve recursively]
+    E -- Yes --> F[Resolve recursively]
     F --> C
-    E -->|No| G[Raise validation error]
+    E -- No --> G[Raise validation error]
 
-    classDef input fill:#DBEAFE,stroke:#2563EB,color:#111827,stroke-width:2px;
-    classDef question fill:#F3F4F6,stroke:#6B7280,color:#111827,stroke-width:2px;
-    classDef success fill:#DCFCE7,stroke:#16A34A,color:#111827,stroke-width:2px;
-    classDef error fill:#FEE2E2,stroke:#DC2626,color:#111827,stroke-width:2px;
+%% Classes
+    classDef input fill:#4A90E2,color:#fff,stroke:#2C5FA3,stroke-width:2px;
+    classDef decision fill:#F5A623,color:#000,stroke:#C97A00,stroke-width:2px;
+    classDef success fill:#27AE60,color:#fff,stroke:#1E8449,stroke-width:2px;
+    classDef error fill:#E74C3C,color:#fff,stroke:#A93226,stroke-width:2px;
 
+%% Apply classes
     class A,D input;
-    class B,E question;
+    class B,E decision;
     class C,F success;
     class G error;
 ```
@@ -172,13 +144,6 @@ TagCore detects these classes of problems while resolving tags:
 - Invalid tag IDs
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "lineColor": "#475569",
-    "background": "#FFFFFF"
-  }
-}}%%
 flowchart LR
     A[Parse tag file] --> B[Validate tag ID]
     B --> C[Validate values]
@@ -191,10 +156,12 @@ flowchart LR
     D -. missing or wrong type .-> G
     E -. cycle detected .-> G
 
-    classDef process fill:#EDE9FE,stroke:#7C3AED,color:#111827,stroke-width:2px;
-    classDef accept fill:#DCFCE7,stroke:#16A34A,color:#111827,stroke-width:2px;
-    classDef fail fill:#FEE2E2,stroke:#DC2626,color:#111827,stroke-width:2px;
+%% Classes
+    classDef process fill:#4A90E2,color:#fff,stroke:#2C5FA3,stroke-width:2px;
+    classDef accept fill:#27AE60,color:#fff,stroke:#1E8449,stroke-width:2px;
+    classDef fail fill:#E74C3C,color:#fff,stroke:#A93226,stroke-width:2px;
 
+%% Apply classes
     class A,B,C,D,E process;
     class F accept;
     class G fail;
@@ -231,21 +198,16 @@ flowchart LR
 In this case, the external version replaces the bundled version because it loads later.
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "themeVariables": {
-    "lineColor": "#475569",
-    "background": "#FFFFFF"
-  }
-}}%%
 flowchart LR
     A[Bundled starter_weapons] --> B[External starter_weapons]
     B --> C[Effective final tag]
 
-    classDef bundled fill:#EDE9FE,stroke:#7C3AED,color:#111827,stroke-width:2px;
-    classDef external fill:#DBEAFE,stroke:#2563EB,color:#111827,stroke-width:2px;
-    classDef final fill:#DCFCE7,stroke:#16A34A,color:#111827,stroke-width:2px;
+%% Classes
+    classDef bundled fill:#9013FE,color:#fff,stroke:#5E0CB2,stroke-width:2px;
+    classDef external fill:#4A90E2,color:#fff,stroke:#2C5FA3,stroke-width:2px;
+    classDef final fill:#27AE60,color:#fff,stroke:#1E8449,stroke-width:2px;
 
+%% Apply classes
     class A bundled;
     class B external;
     class C final;
