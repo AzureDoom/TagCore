@@ -194,14 +194,18 @@ if (keyPropsFile.exists()) {
                     changelogType : "markdown",
                     displayName   : "${project.name} ${project.version}",
                     gameVersions  : [14284],
-                    releaseType   : cfReleaseType,
-                    relations     : [ projects: dependencies ]
+                    releaseType   : cfReleaseType
             ]
+
+            if (!dependencies.isEmpty()) {
+                metadataObj.relations = [ projects: dependencies ]
+            }
+
             def metadataJson = groovy.json.JsonOutput.toJson(metadataObj)
 
             commandLine(
                     curlExe,
-                    "-f", "-sS",
+                    "-sS",
                     "-X", "POST",
                     "https://legacy.curseforge.com/api/projects/${project.curseforgeID}/upload-file",
                     "-H", "X-Api-Token: ${apiKey}",
