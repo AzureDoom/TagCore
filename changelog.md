@@ -1,3 +1,5 @@
-v1.0.0
+v1.1.0
 
-- First release, currently for Pre-release 2026.04.17-c2d518cc9
+- Built for release 2026.03.26-89796e57b
+- Added reload-tags command
+- Updated libraries to support live reloading of assets
