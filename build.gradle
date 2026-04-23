@@ -86,7 +86,7 @@ tasks.build {
 publishing {
     repositories {
         maven {
-            name = project.mod_id
+            name = "azuremaven"
             url = project.maven_url
             credentials(PasswordCredentials)
             authentication {
