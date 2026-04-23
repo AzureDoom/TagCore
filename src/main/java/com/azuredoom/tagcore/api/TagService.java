@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.azuredoom.tagcore.TagCoreMod;
 import com.azuredoom.tagcore.data.*;
+import com.azuredoom.tagcore.util.Internal;
 
 /**
  * Public API facade over the internal {@link TagRegistry}, intended as the primary entry point for other plugins and
@@ -15,7 +16,7 @@ import com.azuredoom.tagcore.data.*;
  */
 public final class TagService {
 
-    private final TagRegistry registry;
+    private volatile TagRegistry registry;
 
     /**
      * Constructs a new {@code TagService} backed by the given registry.
@@ -25,6 +26,24 @@ public final class TagService {
      */
     public TagService(TagRegistry registry) {
         this.registry = Objects.requireNonNull(registry, "registry");
+    }
+
+    @Internal("Used only during reload lifecycle")
+    public void swapRegistry(TagRegistry registry) {
+        this.registry = Objects.requireNonNull(registry, "registry");
+    }
+
+    /**
+     * Returns the current backing {@link TagRegistry} instance used by this service.
+     * <p>
+     * This method is intended for internal use only and provides direct access to the underlying registry for
+     * delegation purposes.
+     *
+     * @return the active {@link TagRegistry}; never {@code null}
+     */
+    @Internal("Internal accessor for the backing TagRegistry; not part of public API")
+    private TagRegistry registry() {
+        return this.registry;
     }
 
     /**
@@ -47,7 +66,7 @@ public final class TagService {
      * @return {@code true} if the tag exists; {@code false} otherwise
      */
     public boolean hasTag(String tagId) {
-        return registry.contains(tagId);
+        return registry().contains(tagId);
     }
 
     /**
@@ -56,7 +75,7 @@ public final class TagService {
      * @return an unmodifiable collection of all tag definitions; never {@code null}
      */
     public Collection<TagDefinition> allTags() {
-        return registry.all();
+        return registry().all();
     }
 
     /**
@@ -68,7 +87,7 @@ public final class TagService {
      * @return {@code true} if {@code value} is in the resolved set of {@code tagId}
      */
     public TagQueryResult<Boolean> isInTag(String tagId, String itemId) {
-        return registry.containsValue(tagId, itemId);
+        return registry().containsValue(tagId, itemId);
     }
 
     /**
@@ -80,7 +99,7 @@ public final class TagService {
      * @return {@code true} if {@code itemId} is in the tag's resolved set
      */
     public TagQueryResult<Boolean> isInItemTag(String tagId, String itemId) {
-        return registry.containsValue(tagId, TagType.ITEM, itemId);
+        return registry().containsValue(tagId, TagType.ITEM, itemId);
     }
 
     /**
@@ -92,7 +111,7 @@ public final class TagService {
      * @return {@code true} if {@code blockId} is in the tag's resolved set
      */
     public TagQueryResult<Boolean> isInBlockTag(String tagId, String blockId) {
-        return registry.containsValue(tagId, TagType.BLOCK, blockId);
+        return registry().containsValue(tagId, TagType.BLOCK, blockId);
     }
 
     /**
@@ -104,7 +123,7 @@ public final class TagService {
      * @return {@code true} if {@code entityId} is in the tag's resolved set
      */
     public TagQueryResult<Boolean> isInEntityTag(String tagId, String entityId) {
-        return registry.containsValue(tagId, TagType.ENTITY, entityId);
+        return registry().containsValue(tagId, TagType.ENTITY, entityId);
     }
 
     /**
@@ -116,7 +135,7 @@ public final class TagService {
      * @return {@code true} if {@code tagId} is in the tag's resolved set
      */
     public TagQueryResult<Boolean> isInBiomeTag(String tagId, String biomeId) {
-        return registry.containsValue(tagId, TagType.BIOME, biomeId);
+        return registry().containsValue(tagId, TagType.BIOME, biomeId);
     }
 
     /**
@@ -128,7 +147,7 @@ public final class TagService {
      * @return {@code true} if {@code tagId} is in the tag's resolved set
      */
     public TagQueryResult<Boolean> isInEffectTag(String tagId, String effectId) {
-        return registry.containsValue(tagId, TagType.EFFECT, effectId);
+        return registry().containsValue(tagId, TagType.EFFECT, effectId);
     }
 
     /**
@@ -140,7 +159,7 @@ public final class TagService {
      * @return {@code true} if {@code tagId} is in the tag's resolved set
      */
     public TagQueryResult<Boolean> isInFluidTag(String tagId, String fluidId) {
-        return registry.containsValue(tagId, TagType.FLUID, fluidId);
+        return registry().containsValue(tagId, TagType.FLUID, fluidId);
     }
 
     /**
@@ -152,7 +171,7 @@ public final class TagService {
      * @return {@code true} if {@code tagId} is in the tag's resolved set
      */
     public TagQueryResult<Boolean> isInDamageTypeTag(String tagId, String damageTypeId) {
-        return registry.containsValue(tagId, TagType.DAMAGE_TYPE, damageTypeId);
+        return registry().containsValue(tagId, TagType.DAMAGE_TYPE, damageTypeId);
     }
 
     /**
@@ -162,7 +181,7 @@ public final class TagService {
      * @return an unmodifiable set of resolved item identifiers; never {@code null}
      */
     public TagQueryResult<Set<String>> resolveItemTag(String tagId) {
-        return registry.resolve(tagId, TagType.ITEM);
+        return registry().resolve(tagId, TagType.ITEM);
     }
 
     /**
@@ -172,7 +191,7 @@ public final class TagService {
      * @return an unmodifiable set of resolved block identifiers; never {@code null}
      */
     public TagQueryResult<Set<String>> resolveBlockTag(String tagId) {
-        return registry.resolve(tagId, TagType.BLOCK);
+        return registry().resolve(tagId, TagType.BLOCK);
     }
 
     /**
@@ -182,7 +201,7 @@ public final class TagService {
      * @return an unmodifiable set of resolved entity identifiers; never {@code null}
      */
     public TagQueryResult<Set<String>> resolveEntityTag(String tagId) {
-        return registry.resolve(tagId, TagType.ENTITY);
+        return registry().resolve(tagId, TagType.ENTITY);
     }
 
     /**
@@ -192,7 +211,7 @@ public final class TagService {
      * @return an unmodifiable set of resolved biome identifiers; never {@code null}
      */
     public TagQueryResult<Set<String>> resolveBiomeTag(String tagId) {
-        return registry.resolve(tagId, TagType.BIOME);
+        return registry().resolve(tagId, TagType.BIOME);
     }
 
     /**
@@ -202,7 +221,7 @@ public final class TagService {
      * @return an unmodifiable set of resolved effect identifiers; never {@code null}
      */
     public TagQueryResult<Set<String>> resolveEffectTag(String tagId) {
-        return registry.resolve(tagId, TagType.EFFECT);
+        return registry().resolve(tagId, TagType.EFFECT);
     }
 
     /**
@@ -212,7 +231,7 @@ public final class TagService {
      * @return an unmodifiable set of resolved fluid identifiers; never {@code null}
      */
     public TagQueryResult<Set<String>> resolveFluidTag(String tagId) {
-        return registry.resolve(tagId, TagType.FLUID);
+        return registry().resolve(tagId, TagType.FLUID);
     }
 
     /**
@@ -222,7 +241,7 @@ public final class TagService {
      * @return an unmodifiable set of resolved damage type identifiers; never {@code null}
      */
     public TagQueryResult<Set<String>> resolveDamageTypeTag(String tagId) {
-        return registry.resolve(tagId, TagType.DAMAGE_TYPE);
+        return registry().resolve(tagId, TagType.DAMAGE_TYPE);
     }
 
     /**
@@ -235,7 +254,7 @@ public final class TagService {
      * @return a query result containing the matching canonical tag IDs
      */
     public TagQueryResult<Set<String>> getTagsReferencing(String tagId) {
-        var canonicalId = registry.normalizeLookupId(tagId);
+        var canonicalId = registry().normalizeLookupId(tagId);
         if (canonicalId == null) {
             return TagQueryResult.of(
                 TagQueryStatus.INVALID_TAG_ID,
@@ -253,7 +272,7 @@ public final class TagService {
 
         Set<String> matches = new LinkedHashSet<>();
 
-        for (var definition : registry.all()) {
+        for (var definition : registry().all()) {
             for (var rawValue : definition.values()) {
                 if (rawValue == null || rawValue.isBlank() || !rawValue.startsWith("#")) {
                     continue;
@@ -313,12 +332,12 @@ public final class TagService {
         List<TagResolveIssue> issues = new ArrayList<>();
         var hadFailures = false;
 
-        for (var definition : registry.all()) {
+        for (var definition : registry().all()) {
             if (definition.type() != type) {
                 continue;
             }
 
-            var resolved = registry.resolve(definition.canonicalId(), type);
+            var resolved = registry().resolve(definition.canonicalId(), type);
 
             if (!resolved.isSuccess()) {
                 hadFailures = true;
@@ -370,12 +389,12 @@ public final class TagService {
                 continue;
             }
 
-            var definition = registry.get(tagId);
+            var definition = registry().get(tagId);
             if (definition == null || definition.type() != tagType) {
                 continue;
             }
 
-            if (registry.resolve(tagId).value().contains(value)) {
+            if (registry().resolve(tagId, tagType).value().contains(value)) {
                 return true;
             }
         }

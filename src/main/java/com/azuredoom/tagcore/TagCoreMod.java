@@ -5,7 +5,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import com.azuredoom.tagcore.api.TagService;
-import com.azuredoom.tagcore.data.TagDefinition;
+import com.azuredoom.tagcore.command.ReloadTagsCommand;
 import com.azuredoom.tagcore.data.TagRegistry;
 
 public class TagCoreMod extends JavaPlugin {
@@ -24,7 +24,11 @@ public class TagCoreMod extends JavaPlugin {
     protected void start() {
         infoLog("Starting TagCore!");
         this.tagRegistry = new TagBootstrap(this).bootstrap();
-        TagCoreMod.tagService = new TagService(tagRegistry);
+        if (TagCoreMod.tagService == null) {
+            TagCoreMod.tagService = new TagService(this.tagRegistry);
+        } else {
+            TagCoreMod.tagService.swapRegistry(this.tagRegistry);
+        }
         infoLog("TagCore loaded " + tagRegistry.all().size() + " tags.");
         infoLog("TagCore initialized!");
     }
@@ -32,6 +36,8 @@ public class TagCoreMod extends JavaPlugin {
     @Override
     protected void setup() {
         infoLog("Setting up TagCore!");
+        getCommandRegistry().registerCommand(new ReloadTagsCommand(this));
+        infoLog("TagCore reload command registered!");
     }
 
     @Override
@@ -68,19 +74,6 @@ public class TagCoreMod extends JavaPlugin {
     }
 
     /**
-     * Returns the tag registry populated during {@link #start()}.
-     * <p>
-     * The registry provides direct, low-level access to all registered {@link TagDefinition} instances and their
-     * resolved value sets.
-     *
-     * @return the loaded {@link TagRegistry}; never {@code null} after {@link #start()} completes
-     */
-    @SuppressWarnings("unused")
-    public TagRegistry getTagRegistry() {
-        return tagRegistry;
-    }
-
-    /**
      * Returns the tag service populated during {@link #start()}.
      * <p>
      * The service is the recommended API entry point for other plugins, providing type-safe lookup and membership
@@ -90,5 +83,32 @@ public class TagCoreMod extends JavaPlugin {
      */
     public static TagService getTagService() {
         return tagService;
+    }
+
+    /**
+     * Rebuilds the {@link TagRegistry} from all available tag sources and updates the active {@link TagService} to use
+     * the newly constructed registry.
+     * <p>
+     * This method performs a full reload of tag data by invoking {@link TagBootstrap#bootstrap()}, replacing the
+     * current registry instance, and swapping the backing registry used by the shared {@link TagService}. Any existing
+     * references to {@link TagService} will continue to function and will observe the updated tag data after the swap.
+     * <p>
+     * This method is synchronized to ensure that registry replacement is atomic and safe when accessed concurrently.
+     *
+     * @return the total number of tags loaded into the new registry
+     */
+    public synchronized int reloadTags() {
+        var newRegistry = new TagBootstrap(this).bootstrap();
+        this.tagRegistry = newRegistry;
+
+        if (TagCoreMod.tagService == null) {
+            TagCoreMod.tagService = new TagService(newRegistry);
+        } else {
+            TagCoreMod.tagService.swapRegistry(newRegistry);
+        }
+
+        var count = newRegistry.all().size();
+        infoLog("Reloaded " + count + " tags.");
+        return count;
     }
 }
