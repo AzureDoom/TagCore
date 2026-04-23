@@ -1,2 +1,2 @@
-msg.tagcore.success = TagCore reloaded successfully. Loaded  {count} tags.
+msg.tagcore.success = Tags reloaded. Total= {total}, added= {added}, updated= {updated}, and removed {removed}
 msg.tagcore.failed = Failed to reload tags: {error}

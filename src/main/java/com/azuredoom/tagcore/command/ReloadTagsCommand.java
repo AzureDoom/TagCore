@@ -32,9 +32,16 @@ public class ReloadTagsCommand extends AbstractPlayerCommand {
         @NonNullDecl World world
     ) {
         try {
-            var count = this.plugin.reloadTags();
+            var summary = this.plugin.reloadTags();
+
             commandContext.sendMessage(
-                TranslationUtil.translate(TranslationKeys.RELOAD_SUCCESS, msg -> msg.param("count", count))
+                TranslationUtil.translate(
+                    TranslationKeys.RELOAD_SUCCESS,
+                    msg -> msg.param("total", summary.total())
+                        .param("added", summary.added())
+                        .param("updated", summary.updated())
+                        .param("removed", summary.removed())
+                )
             );
         } catch (Exception e) {
             TagCoreMod.warnLog("Failed to reload tags: " + e.getMessage());

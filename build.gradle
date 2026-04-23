@@ -47,8 +47,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly "com.hypixel.hytale:Server:${hytale_version}"
-    testRuntimeOnly 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
-    implementation 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
+    testRuntimeOnly 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.1.2'
+    implementation 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.1.2'
     shade 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
     implementation 'curse.maven:dynamictooltipslib-1459711:7817318'
 }

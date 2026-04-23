@@ -453,6 +453,33 @@ public final class TagRegistry {
         );
     }
 
+    /**
+     * Removes a tag by its identifier.
+     * <p>
+     * The provided ID is normalized before removal. If the ID cannot be normalized to a known canonical form, no action
+     * is taken.
+     * </p>
+     *
+     * @param id the tag identifier to remove
+     */
+    public synchronized void remove(String id) {
+        var canonicalId = normalizeLookupId(id);
+        if (canonicalId == null) {
+            return;
+        }
+
+        tags.remove(canonicalId);
+        resolvedCache.clear();
+    }
+
+    /**
+     * Validates whether the given ID is a known valid game identifier for the specified tag type.
+     *
+     * @param type the tag type used to determine the valid ID set
+     * @param id   the identifier to validate
+     * @return {@code true} if the ID is non-blank and present in the corresponding valid ID set; {@code false}
+     *         otherwise
+     */
     private boolean isValidGameId(TagType type, String id) {
         if (id == null || id.isBlank()) {
             return false;

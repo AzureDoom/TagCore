@@ -9,11 +9,14 @@ import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.azuredoom.tagcore.api.TagService;
 import com.azuredoom.tagcore.command.ReloadTagsCommand;
 import com.azuredoom.tagcore.compat.DynamicTooltipsLibCompat;
+import com.azuredoom.tagcore.data.ReloadSummary;
 import com.azuredoom.tagcore.data.TagRegistry;
 
 public class TagCoreMod extends JavaPlugin {
 
     public static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
+
+    private TagBootstrap tagBootstrap;
 
     private TagRegistry tagRegistry;
 
@@ -26,7 +29,9 @@ public class TagCoreMod extends JavaPlugin {
     @Override
     protected void start() {
         infoLog("Starting TagCore!");
-        this.tagRegistry = new TagBootstrap(this).bootstrap();
+        this.tagBootstrap = new TagBootstrap(this);
+        this.tagRegistry = this.tagBootstrap.bootstrap();
+
         if (TagCoreMod.tagService == null) {
             TagCoreMod.tagService = new TagService(this.tagRegistry);
         } else {
@@ -93,29 +98,35 @@ public class TagCoreMod extends JavaPlugin {
     }
 
     /**
-     * Rebuilds the {@link TagRegistry} from all available tag sources and updates the active {@link TagService} to use
-     * the newly constructed registry.
-     * <p>
-     * This method performs a full reload of tag data by invoking {@link TagBootstrap#bootstrap()}, replacing the
-     * current registry instance, and swapping the backing registry used by the shared {@link TagService}. Any existing
-     * references to {@link TagService} will continue to function and will observe the updated tag data after the swap.
-     * <p>
-     * This method is synchronized to ensure that registry replacement is atomic and safe when accessed concurrently.
+     * Reloads all tag assets and updates the active tag registry and service.
      *
-     * @return the total number of tags loaded into the new registry
+     * @return a summary describing the total loaded tags and the number of added, updated, and removed tags detected
+     *         during reload
+     * @throws IllegalStateException if the tag bootstrap has not been initialized
      */
-    public synchronized int reloadTags() {
-        var newRegistry = new TagBootstrap(this).bootstrap();
-        this.tagRegistry = newRegistry;
-
-        if (TagCoreMod.tagService == null) {
-            TagCoreMod.tagService = new TagService(newRegistry);
-        } else {
-            TagCoreMod.tagService.swapRegistry(newRegistry);
+    public synchronized ReloadSummary reloadTags() {
+        if (this.tagBootstrap == null) {
+            throw new IllegalStateException("Tag bootstrap was not initialized.");
         }
 
-        var count = newRegistry.all().size();
-        infoLog("Reloaded " + count + " tags.");
-        return count;
+        var result = this.tagBootstrap.reload();
+        this.tagRegistry = this.tagBootstrap.registry();
+
+        if (TagCoreMod.tagService == null) {
+            TagCoreMod.tagService = new TagService(this.tagRegistry);
+        } else {
+            TagCoreMod.tagService.swapRegistry(this.tagRegistry);
+        }
+
+        if (PluginManager.get().getPlugin(new PluginIdentifier("org.herolias", "DynamicTooltipsLib")) != null) {
+            DynamicTooltipsLibCompat.refresh();
+        }
+
+        return new ReloadSummary(
+            result.currentSnapshot().mergedAssets().size(),
+            result.diff().added().size(),
+            result.diff().updated().size(),
+            result.diff().removed().size()
+        );
     }
 }

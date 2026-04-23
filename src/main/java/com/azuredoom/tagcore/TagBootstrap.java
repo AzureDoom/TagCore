@@ -1,9 +1,11 @@
 package com.azuredoom.tagcore;
 
 import com.azuredoom.hytalecustomassetloader.*;
+import com.azuredoom.hytalecustomassetloader.model.AssetReloadResult;
 import com.azuredoom.hytalecustomassetloader.model.AssetSource;
 import com.azuredoom.hytalecustomassetloader.model.AssetSourceKind;
 import com.azuredoom.hytalecustomassetloader.spi.AssetLogger;
+import com.azuredoom.hytalecustomassetloader.spi.ReloadableAssetRegistrar;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.hypixel.hytale.builtin.hytalegenerator.assets.biomes.BiomeAsset;
@@ -19,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.*;
 
 import com.azuredoom.tagcore.data.*;
@@ -45,10 +48,75 @@ public final class TagBootstrap {
 
     private static final Gson GSON = new Gson();
 
-    private final JavaPlugin plugin;
+    private final TagRegistry registry;
+
+    private final AssetLoader<TagDefinition> loader;
+
+    private final ReloadableAssetRegistrar<TagDefinition> registrar;
 
     public TagBootstrap(JavaPlugin plugin) {
-        this.plugin = Objects.requireNonNull(plugin, "plugin");
+        this.registry = new TagRegistry(
+            collectValidItemIds(),
+            collectValidBlockIds(),
+            collectValidEntityIds(),
+            collectValidBiomeIds(),
+            collectValidEffectIds(),
+            collectValidFluidIds(),
+            collectValidDamageTypeIds()
+        );
+
+        var options = new AssetDiscoveryOptions(
+            "tags",
+            ".json",
+            Paths.get("mods").toAbsolutePath().normalize(),
+            true,
+            true,
+            true,
+            true,
+            true,
+            Duration.ofMillis(250)
+        );
+
+        this.loader = new AssetLoader<>(
+            plugin.getClass().getClassLoader(),
+            options,
+            this::loadTag,
+            TagDefinition::canonicalId,
+            new AssetLogger() {
+
+                @Override
+                public void info(String message) {
+                    TagCoreMod.infoLog(message);
+                }
+
+                @Override
+                public void warn(String message) {
+                    TagCoreMod.warnLog(message);
+                }
+            }
+        );
+
+        this.registrar = new ReloadableAssetRegistrar<>() {
+
+            @Override
+            public void add(String id, TagDefinition asset) {
+                registry.register(asset);
+                TagCoreMod.infoLog("Added tag: " + id);
+            }
+
+            @Override
+            public void update(String id, TagDefinition previousAsset, TagDefinition currentAsset) {
+                registry.remove(id);
+                registry.register(currentAsset);
+                TagCoreMod.infoLog("Updated tag: " + id);
+            }
+
+            @Override
+            public void remove(String id, TagDefinition asset) {
+                registry.remove(id);
+                TagCoreMod.infoLog("Removed tag: " + id);
+            }
+        };
     }
 
     /**
@@ -61,16 +129,14 @@ public final class TagBootstrap {
      * @throws RuntimeException if any tag file cannot be parsed or if reference resolution fails
      */
     public TagRegistry bootstrap() {
-        var registry = new TagRegistry(
-            collectValidItemIds(),
-            collectValidBlockIds(),
-            collectValidEntityIds(),
-            collectValidBiomeIds(),
-            collectValidEffectIds(),
-            collectValidFluidIds(),
-            collectValidDamageTypeIds()
-        );
-        loadAllTags(registry);
+        var result = loader.loadAll();
+
+        for (var entry : result.snapshot().mergedAssets().entrySet()) {
+            registrar.add(entry.getKey(), entry.getValue());
+        }
+
+        validateAllTags();
+        TagCoreMod.infoLog("Loaded " + result.snapshot().mergedAssets().size() + " tags.");
         return registry;
     }
 
@@ -261,70 +327,69 @@ public final class TagBootstrap {
     }
 
     /**
-     * Orchestrates loading from all sources into a single merged definition map, then registers every definition and
-     * eagerly resolves all references.
+     * Reloads all tag assets, applies incremental changes, and validates the resulting registry.
+     * <p>
+     * This method delegates to the underlying asset loader to compute a reload result, applies the diff to the
+     * registrar, and then performs a full validation pass over all registered tags.
+     * </p>
      *
-     * @param registry the registry to populate
-     * @throws RuntimeException wrapping any underlying I/O or parse failure
+     * @return the result of the reload operation, including the updated snapshot and diff
      */
-    private void loadAllTags(TagRegistry registry) {
-        try {
-            var loader = new AssetLoader<>(
-                plugin.getClass().getClassLoader(),
-                new AssetDiscoveryOptions(
-                    "tags",
-                    ".json",
-                    Paths.get("mods").toAbsolutePath().normalize(),
-                    true,
-                    false
-                ),
-                this::loadTag,
-                TagDefinition::canonicalId,
-                new AssetLogger() {
-
-                    @Override
-                    public void info(String message) {
-                        TagCoreMod.infoLog(message);
-                    }
-
-                    @Override
-                    public void warn(String message) {
-                        TagCoreMod.warnLog(message);
-                    }
-                }
+    public AssetReloadResult<TagDefinition> reload() {
+        var result = loader.reload();
+        for (var entry : result.currentSnapshot().mergedAssets().entrySet()) {
+            TagCoreMod.infoLog(
+                "Tag loaded: " + entry.getKey() + " from " + entry.getValue().source()
             );
+        }
+        registrar.applyReload(result);
+        validateAllTags();
 
-            var result = loader.loadAll();
+        TagCoreMod.infoLog(
+            "Reload complete. Added=" + result.diff().added().size()
+                + ", Updated=" + result.diff().updated().size()
+                + ", Removed=" + result.diff().removed().size()
+        );
 
-            for (var definition : result.mergedAssets().values()) {
-                registry.register(definition);
+        return result;
+    }
+
+    /**
+     * Returns the current tag registry.
+     *
+     * @return the active tag registry
+     */
+    public TagRegistry registry() {
+        return registry;
+    }
+
+    /**
+     * Validates all registered tags by attempting to resolve each one.
+     * <p>
+     * Any issues encountered during resolution are logged. Tags that fail to resolve due to circular references,
+     * invalid content, missing definitions, or invalid identifiers will produce warning logs.
+     * </p>
+     */
+    private void validateAllTags() {
+        for (var definition : registry.all()) {
+            var resultResolve = registry.resolve(definition.canonicalId());
+
+            for (var issue : resultResolve.issues()) {
+                TagCoreMod.warnLog(
+                    "While resolving tag '" + definition.canonicalId() + "': " + issue.detail()
+                );
             }
 
-            for (var definition : registry.all()) {
-                var resultResolve = registry.resolve(definition.canonicalId());
-
-                for (var issue : resultResolve.issues()) {
-                    TagCoreMod.warnLog(
-                        "While resolving tag '" + definition.canonicalId() + "': " + issue.detail()
-                    );
-                }
-
-                if (
-                    resultResolve.status() == TagQueryStatus.CIRCULAR_REFERENCE
-                        || resultResolve.status() == TagQueryStatus.INVALID_CONTENT
-                        || resultResolve.status() == TagQueryStatus.NOT_FOUND
-                        || resultResolve.status() == TagQueryStatus.INVALID_TAG_ID
-                ) {
-                    throw new IllegalStateException(
-                        "Failed to fully resolve tag '" + definition.canonicalId() + "' with status " + resultResolve
-                            .status()
-                    );
-                }
+            if (
+                resultResolve.status() == TagQueryStatus.CIRCULAR_REFERENCE
+                    || resultResolve.status() == TagQueryStatus.INVALID_CONTENT
+                    || resultResolve.status() == TagQueryStatus.NOT_FOUND
+                    || resultResolve.status() == TagQueryStatus.INVALID_TAG_ID
+            ) {
+                TagCoreMod.warnLog(
+                    "Failed to resolve tag '" + definition.canonicalId() + "' with status " + resultResolve.status()
+                );
             }
-
-            TagCoreMod.infoLog("Loaded " + result.mergedAssets().size() + " tags.");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load tag definitions", e);
         }
     }
 

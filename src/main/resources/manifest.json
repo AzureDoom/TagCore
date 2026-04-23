@@ -9,12 +9,12 @@
         }
     ],
     "Website": "https://example.com",
-    "ServerVersion": "2026.04.17-c2d518cc9",
+    "ServerVersion": "2026.03.26-89796e57b",
     "Dependencies": {
         "Hytale:AssetModule": "*"
     },
     "OptionalDependencies": {
-        
+        "org.herolias:DynamicTooltipsLib": "*"
     },
     "DisabledByDefault": false,
     "Main": "com.azuredoom.tagcore.TagCoreMod",
