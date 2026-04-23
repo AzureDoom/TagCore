@@ -14,8 +14,8 @@ TagCore lets you define reusable named groups of game content such as items, blo
 
 ## Getting Started
 
-Start with the [Installation Guide](./installation.md) to add TagCore to your server or project.
+Start with the [Installation Guide](./installation) to add TagCore to your server or project.
 
-After installation, continue to [Configuration](./configuration.md) to learn how tag files are structured and where they are loaded from.
+After installation, continue to [Configuration](./configuration) to learn how tag files are structured and where they are loaded from.
 
-If you are integrating with TagCore from another mod, see the [Developer API](./developer-api.md).
+If you are integrating with TagCore from another mod, see the [Developer API](./developer-api).
