@@ -34,8 +34,10 @@ public class TagCoreMod extends JavaPlugin {
 
         if (TagCoreMod.tagService == null) {
             TagCoreMod.tagService = new TagService(this.tagRegistry);
+            infoLog("TagCore: TagService has been initialized!");
         } else {
             TagCoreMod.tagService.swapRegistry(this.tagRegistry);
+            infoLog("TagCore: TagService has been swapped!");
         }
         infoLog("TagCore loaded " + tagRegistry.all().size() + " tags.");
         if (PluginManager.get().getPlugin(new PluginIdentifier("org.herolias", "DynamicTooltipsLib")) != null) {
@@ -114,12 +116,14 @@ public class TagCoreMod extends JavaPlugin {
 
         if (TagCoreMod.tagService == null) {
             TagCoreMod.tagService = new TagService(this.tagRegistry);
+            infoLog("TagCore reload completed!");
         } else {
             TagCoreMod.tagService.swapRegistry(this.tagRegistry);
         }
 
         if (PluginManager.get().getPlugin(new PluginIdentifier("org.herolias", "DynamicTooltipsLib")) != null) {
             DynamicTooltipsLibCompat.refresh();
+            infoLog("DynamicTooltipsLib Compat refreshed!");
         }
 
         return new ReloadSummary(

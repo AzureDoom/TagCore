@@ -2,6 +2,8 @@ package com.azuredoom.tagcore.data;
 
 import java.util.*;
 
+import com.azuredoom.tagcore.TagCoreMod;
+
 /**
  * Central store for all registered {@link TagDefinition} instances, providing registration, lookup, type-safe access,
  * and recursive value resolution.
@@ -91,12 +93,14 @@ public final class TagRegistry {
      */
     public String normalizeLookupId(String tagId) {
         if (tagId == null || tagId.isBlank()) {
+            TagCoreMod.infoLog("Tag id cannot be null or blank");
             return null;
         }
 
         try {
             return TagId.parse(tagId).canonical();
         } catch (IllegalArgumentException e) {
+            TagCoreMod.infoLog("Invalid tag id " + tagId);
             return null;
         }
     }
@@ -120,6 +124,7 @@ public final class TagRegistry {
 
         var canonicalId = normalizeLookupId(tagId);
         if (canonicalId == null) {
+            TagCoreMod.infoLog("Invalid tag id " + tagId);
             return TagQueryResult.of(
                 TagQueryStatus.INVALID_TAG_ID,
                 null,
@@ -130,6 +135,7 @@ public final class TagRegistry {
 
         var definition = tags.get(canonicalId);
         if (definition == null) {
+            TagCoreMod.infoLog("Invalid tag id " + tagId);
             return TagQueryResult.of(
                 TagQueryStatus.NOT_FOUND,
                 null,
@@ -139,6 +145,7 @@ public final class TagRegistry {
         }
 
         if (definition.type() != expectedType) {
+            TagCoreMod.infoLog("Invalid tag id " + tagId);
             return TagQueryResult.of(
                 TagQueryStatus.WRONG_TYPE,
                 null,
@@ -172,6 +179,7 @@ public final class TagRegistry {
     public TagQueryResult<Set<String>> resolve(String tagId) {
         var canonicalId = normalizeLookupId(tagId);
         if (canonicalId == null) {
+            TagCoreMod.infoLog("Invalid tag id " + tagId);
             return TagQueryResult.of(
                 TagQueryStatus.INVALID_TAG_ID,
                 Set.of(),
@@ -184,6 +192,7 @@ public final class TagRegistry {
 
         var cached = resolvedCache.get(canonicalId);
         if (cached != null) {
+            TagCoreMod.infoLog("Cache hit for " + canonicalId);
             return cached;
         }
 
@@ -209,6 +218,7 @@ public final class TagRegistry {
 
         var typed = getTyped(tagId, expectedType);
         if (!typed.isSuccess()) {
+            TagCoreMod.infoLog("Invalid tag id " + tagId);
             return TagQueryResult.of(typed.status(), Set.of(), typed.definition(), typed.issues());
         }
 
@@ -232,6 +242,7 @@ public final class TagRegistry {
     private TagQueryResult<Set<String>> resolveInternal(String canonicalId, Set<String> visiting) {
         var definition = tags.get(canonicalId);
         if (definition == null) {
+            TagCoreMod.infoLog("Invalid tag id " + canonicalId);
             return TagQueryResult.of(
                 TagQueryStatus.NOT_FOUND,
                 Set.of(),
@@ -370,6 +381,7 @@ public final class TagRegistry {
     public TagDefinition get(String id) {
         var canonicalId = normalizeLookupId(id);
         if (canonicalId == null) {
+            TagCoreMod.infoLog("Invalid tag id " + id);
             return null;
         }
         return tags.get(canonicalId);
