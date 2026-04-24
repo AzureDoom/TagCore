@@ -118,7 +118,7 @@ public final class TagRegistry {
             throw new NullPointerException("expectedType");
         }
 
-        String canonicalId = normalizeLookupId(tagId);
+        var canonicalId = normalizeLookupId(tagId);
         if (canonicalId == null) {
             return TagQueryResult.of(
                 TagQueryStatus.INVALID_TAG_ID,
@@ -128,7 +128,7 @@ public final class TagRegistry {
             );
         }
 
-        TagDefinition definition = tags.get(canonicalId);
+        var definition = tags.get(canonicalId);
         if (definition == null) {
             return TagQueryResult.of(
                 TagQueryStatus.NOT_FOUND,
@@ -170,7 +170,7 @@ public final class TagRegistry {
      * @return a {@link TagQueryResult} containing the resolved value set and any issues encountered during resolution
      */
     public TagQueryResult<Set<String>> resolve(String tagId) {
-        String canonicalId = normalizeLookupId(tagId);
+        var canonicalId = normalizeLookupId(tagId);
         if (canonicalId == null) {
             return TagQueryResult.of(
                 TagQueryStatus.INVALID_TAG_ID,
@@ -182,12 +182,12 @@ public final class TagRegistry {
             );
         }
 
-        TagQueryResult<Set<String>> cached = resolvedCache.get(canonicalId);
+        var cached = resolvedCache.get(canonicalId);
         if (cached != null) {
             return cached;
         }
 
-        TagQueryResult<Set<String>> result = resolveInternal(canonicalId, new LinkedHashSet<>());
+        var result = resolveInternal(canonicalId, new LinkedHashSet<>());
         resolvedCache.put(canonicalId, result);
         return result;
     }
@@ -311,7 +311,7 @@ public final class TagRegistry {
                     continue;
                 }
 
-                TagQueryResult<Set<String>> nested = resolveInternal(referencedCanonical, visiting);
+                var nested = resolveInternal(referencedCanonical, visiting);
                 issues.addAll(nested.issues());
 
                 if (nested.status() == TagQueryStatus.CIRCULAR_REFERENCE) {
@@ -409,7 +409,7 @@ public final class TagRegistry {
     public TagQueryResult<Boolean> containsValue(String tagId, String value) {
         Objects.requireNonNull(value, "value");
 
-        TagQueryResult<Set<String>> resolved = resolve(tagId);
+        var resolved = resolve(tagId);
         if (!resolved.isSuccess()) {
             return TagQueryResult.of(resolved.status(), false, resolved.definition(), resolved.issues());
         }
@@ -440,7 +440,7 @@ public final class TagRegistry {
         Objects.requireNonNull(expectedType, "expectedType");
         Objects.requireNonNull(value, "value");
 
-        TagQueryResult<Set<String>> resolved = resolve(tagId, expectedType);
+        var resolved = resolve(tagId, expectedType);
         if (!resolved.isSuccess()) {
             return TagQueryResult.of(resolved.status(), false, resolved.definition(), resolved.issues());
         }

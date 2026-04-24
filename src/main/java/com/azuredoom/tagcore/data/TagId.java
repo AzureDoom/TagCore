@@ -54,18 +54,18 @@ public record TagId(
             throw new IllegalArgumentException("Tag id cannot be null");
         }
 
-        String value = raw.trim();
+        var value = raw.trim();
         if (value.isEmpty()) {
             throw new IllegalArgumentException("Tag id cannot be blank");
         }
 
-        int colon = value.indexOf(':');
+        var colon = value.indexOf(':');
         if (colon < 0) {
             return new TagId(DEFAULT_NAMESPACE, value);
         }
 
-        String namespace = value.substring(0, colon).trim();
-        String path = value.substring(colon + 1).trim();
+        var namespace = value.substring(0, colon).trim();
+        var path = value.substring(colon + 1).trim();
         return new TagId(namespace, path);
     }
 
