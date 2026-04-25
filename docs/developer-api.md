@@ -9,6 +9,44 @@ draft: false
 
 This page explains how to integrate with TagCore from another Hytale mod or plugin.
 
+# Adding the Maven Repository
+
+TagCore is hosted on the AzureDoom Maven.
+Add the following repositories block to your build.gradle file:
+```gradle
+repositories {
+    maven {
+        name = "azuredoomMods"
+        url = uri("https://maven.azuredoom.com/mods")
+    }
+}
+```
+
+# Adding TagCore as a Dependency
+
+Once the repository is added, include TagCore as a dependency:
+
+```gradle
+dependencies {
+    implementation("com.azuredoom.tagcore:TagCore:1.+")
+}
+```
+
+Now in your mods/plugins `manifest.json` add `"com.azuredoom:tagcore": "*"` to either `Dependencies` to set as hard or `OptionalDependencies` if you are adding integration like so:
+
+```json
+{
+    // rest of manifest.json
+    "Dependencies": {
+        "com.azuredoom:tagcore": "*"
+    },
+    "OptionalDependencies": {
+        "com.azuredoom:tagcore": "*"
+    },
+    // rest of manifest.json
+}
+```
+
 ## Recommended Entry Point
 
 TagCore exposes a shared `TagService` as the primary public API.
