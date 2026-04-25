@@ -58,12 +58,13 @@ TagCore exposes a shared `TagService` as the primary public API.
 ```java
 import com.azuredoom.tagcore.api.TagService;
 
-var tagServiceOptional = TagService.getTagService();
-if (tagServiceOptional.isEmpty()) {
-    return;
+public void test() {
+    TagService tagService = TagService.getTagService().orElse(null);
+    if (tagService == null) {
+        return;
+    }
+    /* rest of your code */
 }
-
-TagService tagService = tagServiceOptional.get();
 ```
 
 ## Checking Whether a Tag Exists
