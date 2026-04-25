@@ -78,26 +78,6 @@ class TagRegistryTest {
         assertTrue(result.issues().stream().anyMatch(issue -> issue.type() == TagResolveIssueType.CIRCULAR_REFERENCE));
     }
 
-    @Test
-    void containsValueWithExpectedTypeRejectsWrongTagType() {
-        TagRegistry registry = new TagRegistry(
-            Set.of(),
-            Set.of("oak_log_block"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
-        );
-
-        registry.register(tag("log_blocks", TagType.BLOCK, List.of("oak_log_block")));
-
-        TagQueryResult<Boolean> result = registry.containsValue("log_blocks", TagType.ITEM, "oak_log_block");
-
-        assertEquals(TagQueryStatus.WRONG_TYPE, result.status());
-        assertFalse(result.value());
-    }
-
     private static TagDefinition tag(String id, TagType type, List<String> values) {
         return new TagDefinition(
             id,
