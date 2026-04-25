@@ -1,5 +1,5 @@
-v1.1.0
+v1.1.1
 
-- Built for release 2026.03.26-89796e57b
-- Added reload-tags command
-- Updated libraries to support live reloading of assets
+- Added Sound, Environment, Item Categories, Root Interaction, emotes, entity stat type, and particle tag types support.
+- Internal refactor to make adding new tag types far easier internally
+- Improved some internal logging.
