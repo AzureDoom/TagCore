@@ -163,7 +163,7 @@ public final class TagService {
     }
 
     /**
-     * Returns {@code true} if the given entity identifier is a member of the specified {@link TagType#DAMAGE_TYPE}
+     * Returns {@code true} if the given damage type identifier is a member of the specified {@link TagType#DAMAGE_TYPE}
      * tag's resolved value set.
      *
      * @param tagId        the ID of the damage type tag check against
@@ -172,6 +172,90 @@ public final class TagService {
      */
     public TagQueryResult<Boolean> isInDamageTypeTag(String tagId, String damageTypeId) {
         return registry().containsValue(tagId, TagType.DAMAGE_TYPE, damageTypeId);
+    }
+
+    /**
+     * Returns {@code true} if the given sound identifier is a member of the specified {@link TagType#SOUND} tag's
+     * resolved value set.
+     *
+     * @param tagId   the ID of the sound tag check against
+     * @param soundId the sound identifier to test for membership
+     * @return {@code true} if {@code tagId} is in the tag's resolved set
+     */
+    public TagQueryResult<Boolean> isInSoundTag(String tagId, String soundId) {
+        return registry().containsValue(tagId, TagType.SOUND, soundId);
+    }
+
+    /**
+     * Returns {@code true} if the given environment identifier is a member of the specified {@link TagType#ENVIRONMENT}
+     * tag's resolved value set.
+     *
+     * @param tagId         the ID of the environment tag check against
+     * @param environmentId the environment identifier to test for membership
+     * @return {@code true} if {@code tagId} is in the tag's resolved set
+     */
+    public TagQueryResult<Boolean> isInEnvironmentTag(String tagId, String environmentId) {
+        return registry().containsValue(tagId, TagType.ENVIRONMENT, environmentId);
+    }
+
+    /**
+     * Returns {@code true} if the given item category identifier is a member of the specified
+     * {@link TagType#ITEM_CATEGORY} tag's resolved value set.
+     *
+     * @param tagId          the ID of the item category tag check against
+     * @param itemCategoryId the item category identifier to test for membership
+     * @return {@code true} if {@code tagId} is in the tag's resolved set
+     */
+    public TagQueryResult<Boolean> isInItemCategoryTag(String tagId, String itemCategoryId) {
+        return registry().containsValue(tagId, TagType.ITEM_CATEGORY, itemCategoryId);
+    }
+
+    /**
+     * Returns {@code true} if the given root interaction identifier is a member of the specified
+     * {@link TagType#ROOT_INTERACTION} tag's resolved value set.
+     *
+     * @param tagId             the ID of the root interaction tag check against
+     * @param rootInteractionId the root interaction identifier to test for membership
+     * @return {@code true} if {@code tagId} is in the tag's resolved set
+     */
+    public TagQueryResult<Boolean> isInRootInteractionTag(String tagId, String rootInteractionId) {
+        return registry().containsValue(tagId, TagType.ROOT_INTERACTION, rootInteractionId);
+    }
+
+    /**
+     * Returns {@code true} if the given emote identifier is a member of the specified {@link TagType#EMOTE} tag's
+     * resolved value set.
+     *
+     * @param tagId   the ID of the emote tag check against
+     * @param emoteId the emote identifier to test for membership
+     * @return {@code true} if {@code tagId} is in the tag's resolved set
+     */
+    public TagQueryResult<Boolean> isInEmoteTag(String tagId, String emoteId) {
+        return registry().containsValue(tagId, TagType.EMOTE, emoteId);
+    }
+
+    /**
+     * Returns {@code true} if the given entity stat type identifier is a member of the specified
+     * {@link TagType#ENTITY_STAT_TYPE} tag's resolved value set.
+     *
+     * @param tagId            the ID of the entity stat type tag check against
+     * @param entityStatTypeId the entity stat type identifier to test for membership
+     * @return {@code true} if {@code tagId} is in the tag's resolved set
+     */
+    public TagQueryResult<Boolean> isInEntityStatTypeTag(String tagId, String entityStatTypeId) {
+        return registry().containsValue(tagId, TagType.ENTITY_STAT_TYPE, entityStatTypeId);
+    }
+
+    /**
+     * Returns {@code true} if the given particle identifier is a member of the specified {@link TagType#PARTICLE} tag's
+     * resolved value set.
+     *
+     * @param tagId      the ID of the particle tag check against
+     * @param particleId the particle identifier to test for membership
+     * @return {@code true} if {@code tagId} is in the tag's resolved set
+     */
+    public TagQueryResult<Boolean> isInParticleTag(String tagId, String particleId) {
+        return registry().containsValue(tagId, TagType.PARTICLE, particleId);
     }
 
     /**
@@ -242,6 +326,78 @@ public final class TagService {
      */
     public TagQueryResult<Set<String>> resolveDamageTypeTag(String tagId) {
         return registry().resolve(tagId, TagType.DAMAGE_TYPE);
+    }
+
+    /**
+     * Returns the fully resolved set of sound identifiers for the specified {@link TagType#SOUND} tag.
+     *
+     * @param tagId the ID of the sound tag to resolve
+     * @return an unmodifiable set of resolved sound identifiers; never {@code null}
+     */
+    public TagQueryResult<Set<String>> resolveSoundTag(String tagId) {
+        return registry().resolve(tagId, TagType.SOUND);
+    }
+
+    /**
+     * Returns the fully resolved set of environment identifiers for the specified {@link TagType#ENVIRONMENT} tag.
+     *
+     * @param tagId the ID of the environment tag to resolve
+     * @return an unmodifiable set of resolved environment identifiers; never {@code null}
+     */
+    public TagQueryResult<Set<String>> resolveEnvironmentTag(String tagId) {
+        return registry().resolve(tagId, TagType.ENVIRONMENT);
+    }
+
+    /**
+     * Returns the fully resolved set of item category identifiers for the specified {@link TagType#ITEM_CATEGORY} tag.
+     *
+     * @param tagId the ID of the item category tag to resolve
+     * @return an unmodifiable set of resolved item category identifiers; never {@code null}
+     */
+    public TagQueryResult<Set<String>> resolveItemCategoryTag(String tagId) {
+        return registry().resolve(tagId, TagType.ITEM_CATEGORY);
+    }
+
+    /**
+     * Returns the fully resolved set of root interaction identifiers for the specified {@link TagType#ROOT_INTERACTION}
+     * tag.
+     *
+     * @param tagId the ID of the root interaction tag to resolve
+     * @return an unmodifiable set of resolved root interaction identifiers; never {@code null}
+     */
+    public TagQueryResult<Set<String>> resolveRootInteractionTag(String tagId) {
+        return registry().resolve(tagId, TagType.ROOT_INTERACTION);
+    }
+
+    /**
+     * Returns the fully resolved set of emote identifiers for the specified {@link TagType#EMOTE} tag.
+     *
+     * @param tagId the ID of the emote tag to resolve
+     * @return an unmodifiable set of resolved emote identifiers; never {@code null}
+     */
+    public TagQueryResult<Set<String>> resolveEmoteTag(String tagId) {
+        return registry().resolve(tagId, TagType.EMOTE);
+    }
+
+    /**
+     * Returns the fully resolved set of entity stat type identifiers for the specified {@link TagType#ENTITY_STAT_TYPE}
+     * tag.
+     *
+     * @param tagId the ID of the entity stat type tag to resolve
+     * @return an unmodifiable set of resolved entity stat type identifiers; never {@code null}
+     */
+    public TagQueryResult<Set<String>> resolveEntityStatTypeTag(String tagId) {
+        return registry().resolve(tagId, TagType.ENTITY_STAT_TYPE);
+    }
+
+    /**
+     * Returns the fully resolved set of particle identifiers for the specified {@link TagType#PARTICLE} tag.
+     *
+     * @param tagId the ID of the particle tag to resolve
+     * @return an unmodifiable set of resolved particle identifiers; never {@code null}
+     */
+    public TagQueryResult<Set<String>> resolveParticleTag(String tagId) {
+        return registry().resolve(tagId, TagType.PARTICLE);
     }
 
     /**

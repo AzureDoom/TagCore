@@ -17,7 +17,14 @@ public enum TagType {
     BIOME,
     EFFECT,
     FLUID,
-    DAMAGE_TYPE;
+    DAMAGE_TYPE,
+    SOUND,
+    ENVIRONMENT,
+    ITEM_CATEGORY,
+    ROOT_INTERACTION,
+    EMOTE,
+    ENTITY_STAT_TYPE,
+    PARTICLE;
 
     /**
      * Parses a {@code TagType} from its JSON string representation.
@@ -31,6 +38,13 @@ public enum TagType {
      * <li>{@code "effect"} → {@link #EFFECT}</li>
      * <li>{@code "fluid"} → {@link #FLUID}</li>
      * <li>{@code "damage_type"} → {@link #DAMAGE_TYPE}</li>
+     * <li>{@code "sound"} → {@link #SOUND}</li>
+     * <li>{@code "enviorment"} → {@link #ENVIRONMENT}</li>
+     * <li>{@code "item_category"} → {@link #ITEM_CATEGORY}</li>
+     * <li>{@code "root_interaction"} → {@link #ROOT_INTERACTION}</li>
+     * <li>{@code "emote"} → {@link #EMOTE}</li>
+     * <li>{@code "entity_stat_type"} → {@link #ENTITY_STAT_TYPE}</li>
+     * <li>{@code "particle"} → {@link #PARTICLE}</li>
      * </ul>
      *
      * @param value the raw string value read from a tag JSON file
@@ -50,6 +64,13 @@ public enum TagType {
             case "effect" -> EFFECT;
             case "fluid" -> FLUID;
             case "damage_type" -> DAMAGE_TYPE;
+            case "sound" -> SOUND;
+            case "environment" -> ENVIRONMENT;
+            case "item_category" -> ITEM_CATEGORY;
+            case "root_interaction" -> ROOT_INTERACTION;
+            case "emote" -> EMOTE;
+            case "entity_stat_type" -> ENTITY_STAT_TYPE;
+            case "particle" -> PARTICLE;
             default -> throw new IllegalArgumentException("Unknown tag type: " + value);
         };
     }

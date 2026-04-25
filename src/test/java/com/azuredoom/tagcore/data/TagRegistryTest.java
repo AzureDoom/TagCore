@@ -4,7 +4,9 @@ import com.azuredoom.hytalecustomassetloader.model.AssetSource;
 import com.azuredoom.hytalecustomassetloader.model.AssetSourceKind;
 import org.junit.jupiter.api.Test;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,14 +15,9 @@ class TagRegistryTest {
 
     @Test
     void resolveFlattensNestedReferences() {
-        TagRegistry registry = new TagRegistry(
-            Set.of("oak_log", "birch_log", "spruce_log"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            TagType.ITEM,
+            Set.of("oak_log", "birch_log", "spruce_log")
         );
 
         registry.register(tag("common_logs", TagType.ITEM, List.of("oak_log", "birch_log")));
@@ -35,14 +32,13 @@ class TagRegistryTest {
 
     @Test
     void resolveReturnsInvalidContentForWrongTypeReference() {
-        TagRegistry registry = new TagRegistry(
-            Set.of("oak_log"),
-            Set.of("oak_log_block"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            Map.of(
+                TagType.ITEM,
+                Set.of("oak_log"),
+                TagType.BLOCK,
+                Set.of("oak_log_block")
+            )
         );
 
         registry.register(tag("block_logs", TagType.BLOCK, List.of("oak_log_block")));
@@ -59,14 +55,9 @@ class TagRegistryTest {
 
     @Test
     void resolveDetectsCircularReferences() {
-        TagRegistry registry = new TagRegistry(
-            Set.of("oak_log"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            TagType.ITEM,
+            Set.of("oak_log")
         );
 
         registry.register(tag("a", TagType.ITEM, List.of("#b")));
@@ -86,5 +77,15 @@ class TagRegistryTest {
             values,
             new AssetSource(AssetSourceKind.CLASSPATH_DIRECTORY, "tests/" + id + ".json")
         );
+    }
+
+    private static TagRegistry registryWith(Map<TagType, Set<String>> idsByType) {
+        return new TagRegistry(idsByType);
+    }
+
+    private static TagRegistry registryWith(TagType type, Set<String> validIds) {
+        Map<TagType, Set<String>> idsByType = new EnumMap<>(TagType.class);
+        idsByType.put(type, validIds);
+        return new TagRegistry(idsByType);
     }
 }

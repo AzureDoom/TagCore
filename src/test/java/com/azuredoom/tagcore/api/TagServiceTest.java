@@ -4,7 +4,9 @@ import com.azuredoom.hytalecustomassetloader.model.AssetSource;
 import com.azuredoom.hytalecustomassetloader.model.AssetSourceKind;
 import org.junit.jupiter.api.Test;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.azuredoom.tagcore.data.TagDefinition;
@@ -20,14 +22,9 @@ class TagServiceTest {
 
     @Test
     void resolveItemTagUsesTypedResolution() {
-        TagRegistry registry = new TagRegistry(
-            Set.of("oak_log", "birch_log"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            TagType.ITEM,
+            Set.of("oak_log", "birch_log", "spruce_log")
         );
         registry.register(tag("logs", TagType.ITEM, List.of("oak_log", "birch_log")));
 
@@ -40,14 +37,9 @@ class TagServiceTest {
 
     @Test
     void isInBlockTagChecksMembership() {
-        TagRegistry registry = new TagRegistry(
-            Set.of(),
-            Set.of("oak_log_block"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            TagType.BLOCK,
+            Set.of("oak_log_block")
         );
         registry.register(tag("logs", TagType.BLOCK, List.of("oak_log_block")));
 
@@ -60,14 +52,9 @@ class TagServiceTest {
 
     @Test
     void isInEffectTagUsesEffectType() {
-        TagRegistry registry = new TagRegistry(
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of("speed"),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            TagType.EFFECT,
+            Set.of("speed")
         );
         registry.register(tag("beneficial_effects", TagType.EFFECT, List.of("speed")));
 
@@ -86,5 +73,11 @@ class TagServiceTest {
             values,
             new AssetSource(AssetSourceKind.CLASSPATH_DIRECTORY, "tests/" + id + ".json")
         );
+    }
+
+    private static TagRegistry registryWith(TagType type, Set<String> validIds) {
+        Map<TagType, Set<String>> idsByType = new EnumMap<>(TagType.class);
+        idsByType.put(type, validIds);
+        return new TagRegistry(idsByType);
     }
 }

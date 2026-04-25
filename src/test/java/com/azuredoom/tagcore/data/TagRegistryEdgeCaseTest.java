@@ -4,7 +4,9 @@ import com.azuredoom.hytalecustomassetloader.model.AssetSource;
 import com.azuredoom.hytalecustomassetloader.model.AssetSourceKind;
 import org.junit.jupiter.api.Test;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,14 +15,9 @@ class TagRegistryEdgeCaseTest {
 
     @Test
     void resolveReturnsEmptyStatusForEmptyTag() {
-        TagRegistry registry = new TagRegistry(
-            Set.of("iron_ingot"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            TagType.ITEM,
+            Set.of("iron_ingot")
         );
 
         registry.register(tag("empty_tag", List.of()));
@@ -34,14 +31,9 @@ class TagRegistryEdgeCaseTest {
 
     @Test
     void resolveReturnsSuccessButReportsIssueWhenNestedReferenceContainsMissingTag() {
-        TagRegistry registry = new TagRegistry(
-            Set.of("iron_ingot"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            TagType.ITEM,
+            Set.of("iron_ingot")
         );
 
         registry.register(tag("child", List.of("iron_ingot", "#missing_child")));
@@ -57,14 +49,9 @@ class TagRegistryEdgeCaseTest {
 
     @Test
     void resolveReturnsInvalidContentWhenAllNestedReferencesAreMissing() {
-        TagRegistry registry = new TagRegistry(
-            Set.of("iron_ingot"),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of(),
-            Set.of()
+        TagRegistry registry = registryWith(
+            TagType.ITEM,
+            Set.of("iron_ingot")
         );
 
         registry.register(tag("child", List.of("#missing_child")));
@@ -85,5 +72,11 @@ class TagRegistryEdgeCaseTest {
             values,
             new AssetSource(AssetSourceKind.CLASSPATH_DIRECTORY, "tests/" + id + ".json")
         );
+    }
+
+    private static TagRegistry registryWith(TagType type, Set<String> validIds) {
+        Map<TagType, Set<String>> idsByType = new EnumMap<>(TagType.class);
+        idsByType.put(type, validIds);
+        return new TagRegistry(idsByType);
     }
 }

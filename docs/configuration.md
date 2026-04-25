@@ -83,6 +83,13 @@ TagCore currently supports these tag types:
 - `effect`
 - `fluid`
 - `damage_type`
+- `sound`
+- `enviorment`
+- `item_category`
+- `root_interaction`
+- `emote`
+- `entity_stat_type`
+- `particle`
 
 Type names are parsed case-insensitively, and surrounding whitespace is ignored.
 

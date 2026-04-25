@@ -27,36 +27,15 @@ public final class TagRegistry {
 
     private final Map<String, TagQueryResult<Set<String>>> resolvedCache = new LinkedHashMap<>();
 
-    private final Set<String> validItemIds;
+    private final Map<TagType, Set<String>> validIdsByType;
 
-    private final Set<String> validBlockIds;
+    public TagRegistry(Map<TagType, Set<String>> validIdsByType) {
+        this.validIdsByType = new EnumMap<>(TagType.class);
 
-    private final Set<String> validEntityIds;
-
-    private final Set<String> validBiomeIds;
-
-    private final Set<String> validEffectIds;
-
-    private final Set<String> validFluidIds;
-
-    private final Set<String> validDamageTypeIds;
-
-    public TagRegistry(
-        Set<String> validItemIds,
-        Set<String> validBlockIds,
-        Set<String> validEntityIds,
-        Set<String> validBiomeIds,
-        Set<String> validEffectIds,
-        Set<String> validFluidIds,
-        Set<String> validDamageTypeIds
-    ) {
-        this.validItemIds = validItemIds != null ? Set.copyOf(validItemIds) : Collections.emptySet();
-        this.validBlockIds = validBlockIds != null ? Set.copyOf(validBlockIds) : Collections.emptySet();
-        this.validEntityIds = validEntityIds != null ? Set.copyOf(validEntityIds) : Collections.emptySet();
-        this.validBiomeIds = validBiomeIds != null ? Set.copyOf(validBiomeIds) : Collections.emptySet();
-        this.validEffectIds = validEffectIds != null ? Set.copyOf(validEffectIds) : Collections.emptySet();
-        this.validFluidIds = validFluidIds != null ? Set.copyOf(validFluidIds) : Collections.emptySet();
-        this.validDamageTypeIds = validDamageTypeIds != null ? Set.copyOf(validDamageTypeIds) : Collections.emptySet();
+        for (var type : TagType.values()) {
+            var ids = validIdsByType != null ? validIdsByType.get(type) : null;
+            this.validIdsByType.put(type, ids != null ? Set.copyOf(ids) : Collections.emptySet());
+        }
     }
 
     /**
@@ -493,18 +472,12 @@ public final class TagRegistry {
      *         otherwise
      */
     private boolean isValidGameId(TagType type, String id) {
-        if (id == null || id.isBlank()) {
+        if (type == null || id == null || id.isBlank()) {
             return false;
         }
 
-        return switch (type) {
-            case ITEM -> validItemIds.contains(id);
-            case BLOCK -> validBlockIds.contains(id);
-            case ENTITY -> validEntityIds.contains(id);
-            case BIOME -> validBiomeIds.contains(id);
-            case EFFECT -> validEffectIds.contains(id);
-            case FLUID -> validFluidIds.contains(id);
-            case DAMAGE_TYPE -> validDamageTypeIds.contains(id);
-        };
+        return validIdsByType
+            .getOrDefault(type, Collections.emptySet())
+            .contains(id);
     }
 }

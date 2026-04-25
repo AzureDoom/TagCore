@@ -8,14 +8,7 @@ import com.azuredoom.hytalecustomassetloader.spi.AssetLogger;
 import com.azuredoom.hytalecustomassetloader.spi.ReloadableAssetRegistrar;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.hypixel.hytale.builtin.hytalegenerator.assets.biomes.BiomeAsset;
-import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
-import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
-import com.hypixel.hytale.server.core.asset.type.fluid.Fluid;
-import com.hypixel.hytale.server.core.asset.type.item.config.Item;
-import com.hypixel.hytale.server.core.modules.entity.damage.DamageCause;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
-import com.hypixel.hytale.server.npc.NPCPlugin;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,6 +18,7 @@ import java.time.Duration;
 import java.util.*;
 
 import com.azuredoom.tagcore.data.*;
+import com.azuredoom.tagcore.util.TagValidIds;
 
 /**
  * Responsible for discovering, loading, and registering all tag definitions into a {@link TagRegistry} at server
@@ -55,15 +49,7 @@ public final class TagBootstrap {
     private final ReloadableAssetRegistrar<TagDefinition> registrar;
 
     public TagBootstrap(JavaPlugin plugin) {
-        this.registry = new TagRegistry(
-            collectValidItemIds(),
-            collectValidBlockIds(),
-            collectValidEntityIds(),
-            collectValidBiomeIds(),
-            collectValidEffectIds(),
-            collectValidFluidIds(),
-            collectValidDamageTypeIds()
-        );
+        this.registry = new TagRegistry(TagValidIds.collectAll());
 
         var options = new AssetDiscoveryOptions(
             "tags",
@@ -138,192 +124,6 @@ public final class TagBootstrap {
         validateAllTags();
         TagCoreMod.infoLog("Loaded " + result.snapshot().mergedAssets().size() + " tags.");
         return registry;
-    }
-
-    /**
-     * Collects all valid item identifiers from the loaded item asset registry.
-     * <p>
-     * Only non-null, non-blank IDs are included. The resulting set preserves the iteration order of the underlying
-     * asset map.
-     *
-     * @return a set of valid item identifiers; never {@code null}
-     */
-    private Set<String> collectValidItemIds() {
-        Set<String> ids = new LinkedHashSet<>();
-
-        for (var item : Item.getAssetMap().getAssetMap().values()) {
-            if (item == null) {
-                continue;
-            }
-
-            var id = item.getId();
-            if (id != null && !id.isBlank()) {
-                ids.add(id);
-            }
-        }
-
-        TagCoreMod.infoLog("Collected " + ids.size() + " valid item ids.");
-        return ids;
-    }
-
-    /**
-     * Collects all valid block identifiers from the loaded block asset registry.
-     * <p>
-     * Only non-null, non-blank IDs are included. The resulting set preserves the iteration order of the underlying
-     * asset map.
-     *
-     * @return a set of valid block identifiers; never {@code null}
-     */
-    private Set<String> collectValidBlockIds() {
-        Set<String> ids = new LinkedHashSet<>();
-
-        for (var block : BlockType.getAssetMap().getAssetMap().values()) {
-            if (block == null) {
-                continue;
-            }
-
-            var id = block.getId();
-            if (id != null && !id.isBlank()) {
-                ids.add(id);
-            }
-        }
-
-        TagCoreMod.infoLog("Collected " + ids.size() + " valid block ids.");
-        return ids;
-    }
-
-    /**
-     * Collects all valid entity identifiers from the NPC plugin.
-     * <p>
-     * If the NPC plugin is unavailable or an error occurs during retrieval, an empty set is returned and a warning is
-     * logged.
-     *
-     * @return a set of valid entity identifiers; never {@code null}
-     */
-    private Set<String> collectValidEntityIds() {
-        Set<String> ids = new LinkedHashSet<>();
-
-        try {
-            var npcPlugin = NPCPlugin.get();
-            if (npcPlugin == null) {
-                TagCoreMod.warnLog("NPCPlugin was null while collecting valid entity ids.");
-                return ids;
-            }
-
-            for (var id : npcPlugin.getRoleTemplateNames(false)) {
-                if (id != null && !id.isBlank()) {
-                    ids.add(id);
-                }
-            }
-        } catch (Exception e) {
-            TagCoreMod.warnLog("Failed to collect valid entity ids: " + e.getMessage());
-        }
-
-        TagCoreMod.infoLog("Collected " + ids.size() + " valid entity ids.");
-        return ids;
-    }
-
-    /**
-     * Collects all valid biome identifiers from the loaded biome asset registry.
-     * <p>
-     * Only non-null, non-blank IDs are included. The resulting set preserves the iteration order of the underlying
-     * asset map.
-     *
-     * @return a set of valid biome identifiers; never {@code null}
-     */
-    private Set<String> collectValidBiomeIds() {
-        Set<String> ids = new LinkedHashSet<>();
-
-        for (var biome : BiomeAsset.getAssetStore().getAssetMap().getAssetMap().values()) {
-            if (biome == null) {
-                continue;
-            }
-
-            var id = biome.getId();
-            if (id != null && !id.isBlank()) {
-                ids.add(id);
-            }
-        }
-        TagCoreMod.infoLog("Collected " + ids.size() + " valid biome ids.");
-        return ids;
-    }
-
-    /**
-     * Collects all valid effect identifiers from the loaded entity effect registry.
-     * <p>
-     * Only non-null, non-blank IDs are included. The resulting set preserves the iteration order of the underlying
-     * asset map.
-     *
-     * @return a set of valid effect identifiers; never {@code null}
-     */
-    private Set<String> collectValidEffectIds() {
-        Set<String> ids = new LinkedHashSet<>();
-
-        for (var effect : EntityEffect.getAssetMap().getAssetMap().values()) {
-            if (effect == null) {
-                continue;
-            }
-
-            var id = effect.getId();
-            if (id != null && !id.isBlank()) {
-                ids.add(id);
-            }
-        }
-
-        TagCoreMod.infoLog("Collected " + ids.size() + " valid effect ids.");
-        return ids;
-    }
-
-    /**
-     * Collects all valid fluid identifiers from the loaded fluid asset registry.
-     * <p>
-     * Only non-null, non-blank IDs are included. The resulting set preserves the iteration order of the underlying
-     * asset map.
-     *
-     * @return a set of valid fluid identifiers; never {@code null}
-     */
-    private Set<String> collectValidFluidIds() {
-        Set<String> ids = new LinkedHashSet<>();
-
-        for (var fluid : Fluid.getAssetMap().getAssetMap().values()) {
-            if (fluid == null) {
-                continue;
-            }
-
-            var id = fluid.getId();
-            if (id != null && !id.isBlank()) {
-                ids.add(id);
-            }
-        }
-
-        TagCoreMod.infoLog("Collected " + ids.size() + " valid fluid ids.");
-        return ids;
-    }
-
-    /**
-     * Collects all valid damage type identifiers from the loaded damage cause registry.
-     * <p>
-     * Only non-null, non-blank IDs are included. The resulting set preserves the iteration order of the underlying
-     * asset map.
-     *
-     * @return a set of valid damage type identifiers; never {@code null}
-     */
-    private Set<String> collectValidDamageTypeIds() {
-        Set<String> ids = new LinkedHashSet<>();
-
-        for (var damageType : DamageCause.getAssetMap().getAssetMap().values()) {
-            if (damageType == null) {
-                continue;
-            }
-
-            var id = damageType.getId();
-            if (id != null && !id.isBlank()) {
-                ids.add(id);
-            }
-        }
-
-        TagCoreMod.infoLog("Collected " + ids.size() + " valid damage types.");
-        return ids;
     }
 
     /**
