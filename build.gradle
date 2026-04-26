@@ -69,11 +69,6 @@ tasks.withType(Test).configureEach {
     systemProperty 'java.util.logging.manager', 'com.hypixel.hytale.logger.HytaleLogManager'
 }
 
-def serverRunDir = file("$projectDir/run")
-if (!serverRunDir.exists()) {
-    serverRunDir.mkdirs()
-}
-
 idea {
     module {
         downloadSources = true
