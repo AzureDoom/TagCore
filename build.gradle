@@ -3,8 +3,8 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'com.diffplug.spotless' version '8.1.0'
-    id 'com.azuredoom.hytale-tools' version '1.0.23'
-    id 'com.azuredoom.hytalepublisher' version '1.0.0'
+    id 'com.azuredoom.hytale-tools' version '1.0.24'
+    id 'com.azuredoom.hytalepublisher' version '1.0.1'
 }
 
 javadoc {
@@ -121,10 +121,12 @@ hytalePublisher {
     version       = project.version
     releaseType   = "release"
     changelogFile = "changelog.md"
+    gameVersion   = project.hytale_version.toString()
 
     modtale {
         enabled   = true
         projectId = project.modtale_uuid
+        patchline = 'release'
 
         optional "2ebf130e-2189-4e90-9323-803a374d05ce", "1.5.2"
     }
