@@ -56,7 +56,7 @@ public final class TagBootstrap {
             ".json",
             Paths.get("mods").toAbsolutePath().normalize(),
             true,
-            true,
+            false,
             true,
             true,
             true,
