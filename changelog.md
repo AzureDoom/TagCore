@@ -1,5 +1,4 @@
-v1.1.1
+v1.1.2
 
-- Added Sound, Environment, Item Categories, Root Interaction, emotes, entity stat type, and particle tag types support.
-- Internal refactor to make adding new tag types far easier internally
-- Improved some internal logging.
+- Fixes incorrectly shaded library
+- Fixes crash due to missing tag folders
