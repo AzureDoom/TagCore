@@ -50,7 +50,7 @@ dependencies {
     testRuntimeOnly "com.hypixel.hytale:Server:${hytale_version}"
     testRuntimeOnly 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.1.2'
     implementation 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.1.2'
-    shade 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.0.0'
+    shade 'com.azuredoom.hytalecustomassetloader:hytale-custom-asset-loader:1.1.2'
     implementation 'curse.maven:dynamictooltipslib-1459711:7817318'
 }
 
