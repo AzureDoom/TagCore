@@ -1,4 +1,3 @@
-v1.1.2
+v1.1.3
 
-- Fixes incorrectly shaded library
-- Fixes crash due to missing tag folders
+- Updates Hytale Custom Asset Loader to latest version.
