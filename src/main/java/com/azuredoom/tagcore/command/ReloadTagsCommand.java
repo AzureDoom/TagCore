@@ -20,7 +20,7 @@ public class ReloadTagsCommand extends AbstractPlayerCommand {
     public ReloadTagsCommand(TagCoreMod plugin) {
         super("reload_tags", "Reloads the tags from the server");
         this.plugin = plugin;
-        this.requirePermission("tagcore.command.reloadtags");
+        //this.requirePermission("tagcore.command.reloadtags");
     }
 
     @Override
