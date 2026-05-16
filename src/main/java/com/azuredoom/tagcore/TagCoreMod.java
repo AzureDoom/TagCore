@@ -1,5 +1,6 @@
 package com.azuredoom.tagcore;
 
+import com.azuredoom.tagcore.compat.HStats;
 import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -51,6 +52,7 @@ public class TagCoreMod extends JavaPlugin {
     protected void setup() {
         infoLog("Setting up TagCore!");
         getCommandRegistry().registerCommand(new ReloadTagsCommand(this));
+        new HStats("064d44d0-f96f-42d6-a816-12c2a5e3571b", "1.0.1", LOGGER);
         infoLog("TagCore reload command registered!");
     }
 

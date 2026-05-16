@@ -1,3 +1,3 @@
-v1.1.3
+v1.1.4
 
-- Updates Hytale Custom Asset Loader to latest version.
+- Implemented HStats support.
