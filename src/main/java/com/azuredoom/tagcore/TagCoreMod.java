@@ -1,6 +1,5 @@
 package com.azuredoom.tagcore;
 
-import com.azuredoom.tagcore.compat.HStats;
 import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -10,6 +9,7 @@ import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.azuredoom.tagcore.api.TagService;
 import com.azuredoom.tagcore.command.ReloadTagsCommand;
 import com.azuredoom.tagcore.compat.DynamicTooltipsLibCompat;
+import com.azuredoom.tagcore.compat.HStats;
 import com.azuredoom.tagcore.data.ReloadSummary;
 import com.azuredoom.tagcore.data.TagRegistry;
 
