@@ -1,7 +1,7 @@
 {
     "Group": "com.azuredoom",
     "Name": "tagcore",
-    "Version": "1.1.4",
+    "Version": "1.1.5",
     "Description": "A unified tagging API for items, blocks, and entities, enabling cross-mod compatibility",
     "Authors": [
         {
@@ -9,7 +9,7 @@
         }
     ],
     "Website": "https://example.com",
-    "ServerVersion": "2026.03.26-89796e57b",
+    "ServerVersion": "0.5.1",
     "Dependencies": {
         "Hytale:AssetModule": "*"
     },
