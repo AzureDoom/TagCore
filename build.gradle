@@ -3,8 +3,8 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'com.diffplug.spotless' version '8.1.0'
-    id 'com.azuredoom.hytale-tools' version '1.0.24'
-    id 'com.azuredoom.hytalepublisher' version '1.1.1'
+    id 'com.azuredoom.hytale-tools' version '1.+'
+    id 'com.azuredoom.hytalepublisher' version '1.+'
 }
 
 javadoc {
@@ -37,6 +37,15 @@ hytaleTools {
     disabledByDefault = project.disabled_by_default.toString().toBoolean()
     includesPack = project.includes_pack.toString().toBoolean()
     patchline = project.patchline.toString()
+
+    debugEnabled = true
+    debugPort = 5005
+    debugSuspend = false
+
+    hotSwapEnabled = true
+    requireDcevm = true
+    useHotswapAgent = true
+    hotswapAgentPath = '/mnt/4C56E67556E65EE8/HyTale Mods/hotswap-agent-2.0.3.jar'
 }
 
 repositories {
