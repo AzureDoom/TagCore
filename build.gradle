@@ -25,6 +25,7 @@ java {
 hytaleTools {
     javaVersion = project.java_version as Integer
     hytaleVersion = project.hytale_version.toString()
+    manifestServerVersion = project.manifestServerVersion.toString()
     manifestGroup = project.manifest_group.toString()
     modId = project.mod_id.toString()
     modDescription = project.mod_description.toString()
