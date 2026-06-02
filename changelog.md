@@ -1,3 +1,4 @@
-v1.1.6
+v1.1.7
 
-- Fixes update 5 server matching issue.
+- No longer log if missing DynamicTooltipsLib. 
+- Fixes possible issue with missing hytalecustomassetloader
