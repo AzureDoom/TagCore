@@ -31,7 +31,6 @@ public class DynamicTooltipsLibCompat {
 
         var api = DynamicTooltipsApiProvider.get();
         if (api == null) {
-            TagCoreMod.severeLog("DynamicTooltipsLib is not installed!");
             return;
         }
 
