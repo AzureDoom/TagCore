@@ -28,6 +28,7 @@ import com.azuredoom.tagcore.data.TagType;
  * from the NPC plugin. The resulting map is suitable for passing into {@link com.azuredoom.tagcore.data.TagRegistry}
  * for concrete tag value validation.
  */
+@SuppressWarnings("unused")
 public final class TagValidIds {
 
     private TagValidIds() {}

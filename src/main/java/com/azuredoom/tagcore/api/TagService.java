@@ -14,6 +14,7 @@ import com.azuredoom.tagcore.util.Internal;
  * the registry directly ensures a stable, intention-revealing API surface and insulates callers from internal registry
  * details.
  */
+@SuppressWarnings("unused")
 public final class TagService {
 
     private volatile TagRegistry registry;

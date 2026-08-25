@@ -8,6 +8,7 @@ import java.util.function.Consumer;
  * Utility class for handling translation operations. Provides methods to translate message keys into {@code Message}
  * objects and optionally apply custom modifications to the translated messages.
  */
+@SuppressWarnings("unused")
 public final class TranslationUtil {
 
     private TranslationUtil() {}
