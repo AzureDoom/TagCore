@@ -1,5 +1,6 @@
 package com.azuredoom.tagcore.compat;
 
+import com.azuredoom.tagcore.TagCoreMod;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.universe.Universe;
@@ -36,7 +37,7 @@ public class HStats {
 
         this.serverUUID = getServerUUID();
         if (this.serverUUID == null) {
-            System.out.println("[HStats] Metrics are disabled on this server.");
+            TagCoreMod.infoLog("[HStats] Metrics are disabled on this server.");
             return;
         }
 
