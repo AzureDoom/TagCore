@@ -525,8 +525,7 @@ public final class TagService {
     }
 
     /**
-     * Returns {@code true} if the specified value is contained in the resolved value set of the supplied tag
-     * IDs.
+     * Returns {@code true} if the specified value is contained in the resolved value set of the supplied tag IDs.
      * <p>
      * Only tags matching the requested {@link TagType} are considered. Unknown tag IDs, tags of the wrong type, and
      * {@code null} entries are ignored.

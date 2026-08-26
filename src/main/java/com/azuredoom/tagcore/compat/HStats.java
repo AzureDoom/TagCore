@@ -1,6 +1,5 @@
 package com.azuredoom.tagcore.compat;
 
-import com.azuredoom.tagcore.TagCoreMod;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.universe.Universe;
@@ -17,6 +16,8 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import com.azuredoom.tagcore.TagCoreMod;
 
 public class HStats {
 
