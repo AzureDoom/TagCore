@@ -67,7 +67,9 @@ dependencies {
     implementation 'curse.maven:dynamictooltipslib-1459711:7817318'
 }
 
-
+tasks.named('jar', Jar) {
+    enabled = false
+}
 
 shadowJar {
     archiveClassifier.set('')
