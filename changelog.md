@@ -1,4 +1,3 @@
-v1.1.7
+v1.1.8
 
-- No longer log if missing DynamicTooltipsLib. 
-- Fixes possible issue with missing hytalecustomassetloader
+- Built for 0.6.+
