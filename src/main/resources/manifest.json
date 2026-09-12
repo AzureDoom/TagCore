@@ -14,7 +14,8 @@
         "Hytale:AssetModule": "*"
     },
     "OptionalDependencies": {
-        "org.herolias:DynamicTooltipsLib": "*"
+        "org.herolias:DynamicTooltipsLib": "*",
+        "Alechilles:Beacon": "*"
     },
     "DisabledByDefault": false,
     "Main": "com.azuredoom.tagcore.TagCoreMod",
