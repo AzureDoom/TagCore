@@ -126,7 +126,7 @@ hytalePublisher {
         patchline = 'release'
 
         optional "2ebf130e-2189-4e90-9323-803a374d05ce", "1.5.2"
-        optional "c0e9d87b-e72e-4b39-bb3b-cb67c23ec8be", "0.6.0"
+        optional "c0e9d87b-e72e-4b39-bb3b-cb67c23ec8be", "2.0.1"
     }
 
     curseforge {
