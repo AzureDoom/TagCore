@@ -1,3 +1,3 @@
-v1.1.9
+v1.2.0
 
-- Adds optional beacon support for reporting
+- Updated for 0.7.x/Chapter 1
